@@ -1,0 +1,9 @@
+---
+prompt_file: prompts/qampari_rejection.json
+eval_file: data/eval_data/qampari_eval_gtr_top100_calibrated.json
+shot: 2
+ndoc: 5
+dataset_name: qampari
+tag: gtr
+top_p: 0.95
+vllm: True

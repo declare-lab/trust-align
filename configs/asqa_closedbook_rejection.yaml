@@ -1,0 +1,9 @@
+---
+prompt_file: prompts/asqa_closedbook_rejection.json
+eval_file: data/eval_data/asqa_eval_gtr_top100_calibrated.json
+shot: 2
+ndoc: 0
+dataset_name: asqa
+tag: gtr
+top_p: 0.95
+vllm: True

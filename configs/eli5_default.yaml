@@ -1,0 +1,9 @@
+---
+prompt_file: prompts/eli5_default.json
+eval_file: data/eval_data/eli5_eval_bm25_top100_calibrated.json
+shot: 2
+ndoc: 5
+dataset_name: eli5
+tag: bm25
+top_p: 0.95
+vllm: True

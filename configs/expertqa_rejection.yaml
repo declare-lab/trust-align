@@ -1,0 +1,9 @@
+---
+prompt_file: prompts/expertqa_rejection.json
+eval_file: data/expertqa_eval_gtr_top100_calibrated.json
+shot: 2
+ndoc: 5
+dataset_name: expertqa
+tag: gtr
+top_p: 0.95
+vllm: True

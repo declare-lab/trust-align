@@ -1,0 +1,10 @@
+---
+prompt_file: resources/prompts/asqa_rejection.json
+shot: 2
+ndoc: 5
+dataset_name: asqa
+model: meta-llama/Llama-2-7b-chat-hf
+temperature: 0.5
+top_p: 0.95
+max_length: 4096
+vllm: True

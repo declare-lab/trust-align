@@ -1,0 +1,10 @@
+---
+prompt_file: resources/prompts/asqa_rejection.json
+shot: 2
+ndoc: 5
+dataset_name: asqa
+model: gpt4
+temperature: 0.5
+top_p: 0.95
+max_length: 8192
+openai_api: True
