@@ -21,6 +21,7 @@ LLMs are an integral part of retrieval-augmented generation (RAG) systems. While
   - [Data](#data)
   - [Trust-Score](#trust-score)
   - [Trust-Align](#trust-align)
+  - [Training](#training)
   - [Bug or Questions](#bug-or-questions)
   - [Citation](#citation)
 
@@ -243,11 +244,26 @@ sh error_selection.sh
 In `error_selection.sh`, you also need to specify `BASE_DIR` and `OUTPUT_DIR` to the path you saved samples and the path you want to save the obtained output, respectively.
 
 
+## Training
+
+Our training code is based on the [alignment-handbook repository](https://github.com/huggingface/alignment-handbook). We provide the complete training code and configuration files for both SFT and DPO. To get started, you'll need to customize the `model_name_or_path` and `output_dir` settings, and adjust the `num_processes` and `per_device_train_batch_size` parameters in the `.yaml` configuration files according to your computational environment. For specifying the training dataset, use `dataset_mixer` to point to your dataset, ensuring it is in the [Hugging Face dataset format](https://huggingface.co/docs/datasets/en/create_dataset).
+
+* SFT Training:
+``` sh
+cd training
+sh sft.sh
+```
+
+* DPO Training:
+``` sh
+cd training
+sh dpo.sh
+```
+
+
 ## Bug or Questions?
 
 If you have any questions related to the code or the paper, feel free to email Maojia (`maojia_song@mymail.sutd.edu.sg`). If you encounter any problems when using the code, or want to report a bug, you can open an issue. Please try to specify the problem with details so we can help you better and quicker!
-
-
 
 
 ## Citation
