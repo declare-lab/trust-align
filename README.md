@@ -28,8 +28,9 @@ LLMs are an integral part of retrieval-augmented generation (RAG) systems. While
 ## Requirements
 
 ```bash
-conda env create -f environment.yaml
+conda env create -f environment.yml
 conda activate cite
+pip install -r requirements.txt
 ```
 
 <!-- ## Code Structure
