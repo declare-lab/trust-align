@@ -33,6 +33,13 @@ conda env create -f environment.yml
 conda activate cite
 pip install -r requirements.txt
 ```
+We use the latest version of `alignment-handbook` for training (ver `alignment-handbook-0.4.0.dev0`). We followwed the installation instructions on [alignment-handbook repository](https://github.com/huggingface/alignment-handbook):
+
+```bash
+git clone https://github.com/huggingface/alignment-handbook.git
+cd ./alignment-handbook/
+python -m pip install .
+```
 
 <!-- ## Code Structure
 
