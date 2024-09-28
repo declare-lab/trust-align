@@ -1,16 +1,5 @@
 # Measuring and Enhancing Trustworthiness of LLMs in RAG through Grounded Attributions and Learning to Refuse
 
-> 📣 We are releasing Trust-Score, a holistic evaluation of
-the trustworthiness of LLMs in a RAG framework, and the Trust-Align framework that aligns LLMs for higher Trust-Score. 
-[Paper](https://arxiv.org/abs/2409.11242)
-
-We are excited to announce the release of Trust-Score evaluation datasets and Trust-Align alignment datasets:
-
-1) **[Trust-Score](https://huggingface.co/datasets/declare-lab/Trust-Score/tree/main/Trust-Score)**: It features calibrated questions and refusals to measure the model's trustworthiness.
-
-2) **[Trust-Align](https://huggingface.co/datasets/declare-lab/Trust-Score/tree/main/Trust-Align)**: Enhance the model's trustworthiness with high-quality synthesized cited responses.
-
-
 ## Overview
 
 LLMs are an integral part of retrieval-augmented generation (RAG) systems. While many studies focus on evaluating the quality of end-to-end RAG systems, there is a lack of research on understanding the appropriateness of an LLM for the RAG task. Thus, we introduce a new metric, Trust-Score, that provides a holistic evaluation of the trustworthiness of LLMs in an RAG framework. We show that various prompting methods, such as in-context learning, fail to adapt LLMs effectively to the RAG task. Thus, we propose Trust-Align, a framework to align LLMs for higher Trust-Score. LLaMA-3-8b, aligned with our method, significantly outperforms open-source LLMs of comparable sizes on ASQA (↑10.7), QAMPARI (↑29.2), and ELI5 (↑14.9). 
@@ -18,12 +7,9 @@ LLMs are an integral part of retrieval-augmented generation (RAG) systems. While
 ## Quick Links
 
   - [Requirements](#requirements)
-  - [Data](#data)
   - [Trust-Score](#trust-score)
   - [Trust-Align](#trust-align)
   - [Training](#training)
-  - [Bug or Questions](#bug-or-questions)
-  - [Citation](#citation)
 
 
 ## Requirements
@@ -51,11 +37,6 @@ python -m pip install .
 * `configs/`: folder that contains all config files to reproduce baselines.
 * `tools/`: misc code (generate summaries/snippets, reranking, etc.) -->
 
-## Data
-
-Trust-Score evaluation dataset is available on [Huggingface](https://huggingface.co/datasets/declare-lab/Trust-Score/tree/main/Trust-Score).
-
-Trust-Align training dataset is also available [Huggingface](https://huggingface.co/datasets/declare-lab/Trust-Score/tree/main/Trust-Align).
 
 ## Trust-Score
 
@@ -265,26 +246,4 @@ sh sft.sh
 ``` sh
 cd training
 sh dpo.sh
-```
-
-
-## Bug or Questions?
-
-If you have any questions related to the code or the paper, feel free to email Maojia (`maojia_song@mymail.sutd.edu.sg`). If you encounter any problems when using the code, or want to report a bug, you can open an issue. Please try to specify the problem with details so we can help you better and quicker!
-
-
-## Citation
-
-Please cite our paper if you use Trust-align in your work:
-
-```bibtex
-@misc{song2024measuringenhancingtrustworthinessllms,
-      title={Measuring and Enhancing Trustworthiness of LLMs in RAG through Grounded Attributions and Learning to Refuse}, 
-      author={Maojia Song and Shang Hong Sim and Rishabh Bhardwaj and Hai Leong Chieu and Navonil Majumder and Soujanya Poria},
-      year={2024},
-      eprint={2409.11242},
-      archivePrefix={arXiv},
-      primaryClass={cs.CL},
-      url={https://arxiv.org/abs/2409.11242}, 
-}
 ```
