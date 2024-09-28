@@ -7,6 +7,7 @@ LLMs are an integral part of retrieval-augmented generation (RAG) systems. While
 ## Quick Links
 
   - [Requirements](#requirements)
+  - [Data](#data)
   - [Trust-Score](#trust-score)
   - [Trust-Align](#trust-align)
   - [Training](#training)
@@ -27,15 +28,10 @@ cd ./alignment-handbook/
 python -m pip install .
 ```
 
-<!-- ## Code Structure
 
-* `data_processing/`: TRUST_Align preference data generation pipeline
-* `heuristic_preference`: alignment response generation.
-* `run.py`: run file to reproduce our baseline generations.
-* `eval.py`: eval file to evaluate generations.
-* `prompts`: folder that contains all prompt files.
-* `configs/`: folder that contains all config files to reproduce baselines.
-* `tools/`: misc code (generate summaries/snippets, reranking, etc.) -->
+## Data
+
+Our datasets are available on [Google Drive](https://drive.google.com/drive/folders/1SfLa-xq2Qnhvn0bKTqQrqM7Z6-ntGOSC?usp=drive_link).
 
 
 ## Trust-Score
