@@ -2,6 +2,7 @@
 
 ## Project Structure
 
+```text
 trust-eval/
 ├── trust-eval/
 │   ├── __init__.py
@@ -18,3 +19,4 @@ trust-eval/
 ├── README.md
 ├── poetry.lock
 ├── pyproject.toml
+```
