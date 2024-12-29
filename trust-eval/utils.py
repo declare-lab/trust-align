@@ -2,10 +2,7 @@ import torch
 import time
 import re
 import string
-import logging
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+from logging_config import logger
 
 def normalize_answer(s):
     def remove_articles(text):
