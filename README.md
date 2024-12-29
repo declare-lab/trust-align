@@ -1,7 +1,10 @@
 # Trust Eval
 
+Trust Eval is a holistic metric for evaluating trustworthiness of inline cited LLM outputs within the RAG framework. 
+
 ## Project Structure
 
+```text
 trust-eval/
 ├── trust-eval/
 │   ├── __init__.py
@@ -18,3 +21,4 @@ trust-eval/
 ├── README.md
 ├── poetry.lock
 ├── pyproject.toml
+```
