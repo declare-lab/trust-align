@@ -1,21 +1,18 @@
-import copy
-from logging_config import logger
 import collections
+import copy
+from typing import Any, Dict, List, Optional
+
 import numpy as np
 import scipy.stats as stats
-from tqdm import tqdm
 from fuzzywuzzy import fuzz
+from logging_config import logger
 from nltk import sent_tokenize
+from tqdm import tqdm
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
-
 from utils import *
 
-AUTOAIS_MODEL="google/t5_xxl_true_nli_mixture"
 global autoais_model, autoais_tokenizer
 autoais_model, autoais_tokenizer = None, None
-
-REJECTION_FUZZ_THRESHOLD = 85
-REJECTION_FLAG = "I apologize, but I couldn't find an answer"
 
 def compute_len(data):
     """Compute average length of predictions."""
@@ -31,7 +28,7 @@ def compute_len(data):
     return res / cntr
 
 
-def compute_exact_match(data, calib=False, parametric=False):
+def compute_exact_match(data, args, calib=False, parametric=False):
     """
     Computes exact match (STR-EM) and hit metrics (STR-EM-HIT) (only for ASQA) for given data.
 
@@ -79,7 +76,7 @@ def compute_exact_match(data, calib=False, parametric=False):
         if calib:
             # at least answerable
             union_ans_set = np.bitwise_or.reduce([doc["answers_found"] for doc in item['docs']]).tolist()
-            if any(union_ans_set) and (not fuzz.partial_ratio(normalize_answer(REJECTION_FLAG), normalize_answer(item['output'])) > REJECTION_FUZZ_THRESHOLD):
+            if any(union_ans_set) and (not fuzz.partial_ratio(normalize_answer(args.rejection_flag), normalize_answer(item['output'])) > args.rejection_threshold):
                 for i, ans_list in enumerate(item['answers']):
                     # ignore golden answers that are not recalled by given docs
                     if union_ans_set[i] == 1:
@@ -100,25 +97,30 @@ def compute_exact_match(data, calib=False, parametric=False):
     return 100 * np.mean(acc), 100 * np.mean(hit)
 
 
-def get_all_em_scores(data, normalized_data, normalized_answered_data, normalized_answerable_data):
+def get_all_em_scores(data: List[Dict], normalized_data: List[Dict], normalized_answered_data: List[Dict], normalized_answerable_data: List[Dict], args):
     result = {}
-    result['regular_str_em'], result['regular_str_hit'] = compute_exact_match(normalized_data)
-    result['answered_str_em'], result['answered_str_hit'] = compute_exact_match(normalized_answered_data)
-    result['calib_answered_str_em'], result['calib_answered_str_hit'] = compute_exact_match(normalized_answered_data, calib=True)
-    result['calib_answerable_str_em'], result['calib_answerable_str_hit'] = compute_exact_match(normalized_answerable_data, calib=True)
-    result['parametric_str_em'], result['parametric_str_hit'] = compute_exact_match(normalized_answered_data, calib=True, parametric=True)
-    result['parametric_str_em'], result['parametric_str_hit'] = result['answered_str_em'] - result['parametric_str_em'], result['answered_str_hit'] - result['parametric_str_hit']
-    result['calib_str_em_f1'] = stats.hmean([result['calib_answered_str_em'], result['calib_answerable_str_em']])
+    result['regular_str_em'], result['regular_str_hit'] = compute_exact_match(normalized_data, args)
+    result['answered_str_em'], result['answered_str_hit'] = compute_exact_match(normalized_answered_data, args)
+
+    if args.calib:
+        result['calib_answered_str_em'], result['calib_answered_str_hit'] = compute_exact_match(normalized_answered_data, args, calib=True)
+        result['calib_answerable_str_em'], result['calib_answerable_str_hit'] = compute_exact_match(normalized_answerable_data, args, calib=True)
+        result['calib_str_em_f1'] = stats.hmean([result['calib_answered_str_em'], result['calib_answerable_str_em']])
+
+    if args.parametric:
+        result['parametric_str_em'], result['parametric_str_hit'] = compute_exact_match(normalized_answered_data, args, calib=True, parametric=True)
+        result['parametric_str_em'], result['parametric_str_hit'] = result['answered_str_em'] - result['parametric_str_em'], result['answered_str_hit'] - result['parametric_str_hit']
+    
     return result
 
 
-def compute_claim_match(data, calib=False, parametric=False):
+def compute_claim_match(data, args, calib=False, parametric=False):
     
     global autoais_model, autoais_tokenizer
     if autoais_model is None:
         logger.info("Loading AutoAIS model...")
-        autoais_model = AutoModelForSeq2SeqLM.from_pretrained(AUTOAIS_MODEL, torch_dtype=torch.bfloat16, max_memory=get_max_memory(), device_map="auto")
-        autoais_tokenizer = AutoTokenizer.from_pretrained(AUTOAIS_MODEL, use_fast=False)
+        autoais_model = AutoModelForSeq2SeqLM.from_pretrained(args.autoais_model, torch_dtype=torch.bfloat16, max_memory=get_max_memory(), device_map="auto")
+        autoais_tokenizer = AutoTokenizer.from_pretrained(args.autoais_model, use_fast=False)
 
     logger.info("Computing claims...")
 
@@ -148,7 +150,7 @@ def compute_claim_match(data, calib=False, parametric=False):
                     calib_entail += ais_score
         
         # answered/answerable condition
-        rejection = fuzz.partial_ratio(normalize_answer(REJECTION_FLAG), normalize_answer(item['output'])) > REJECTION_FUZZ_THRESHOLD
+        rejection = fuzz.partial_ratio(normalize_answer(args.rejection_flag), normalize_answer(item['output'])) > args.rejection_threshold
 
         if not rejection:
             answered_scores.append(entail / len(claims))
@@ -196,11 +198,11 @@ def compute_claim_match(data, calib=False, parametric=False):
         }
 
 
-def get_all_cm_scores(data, normalized_data, normalized_answered_data, normalized_answerable_data):
-    return compute_claim_match(normalized_data, calib=True, parametric=True)
+def get_all_cm_scores(data: List[Dict], normalized_data: List[Dict], normalized_answered_data: List[Dict], normalized_answerable_data: List[Dict], args):
+    return compute_claim_match(normalized_data, args, calib=args.calib, parametric=args.parametric)
 
 
-def compute_qampari_f1(data, cot=False, prefix="", calib=False, parametric=False):
+def compute_qampari_f1(data, args, cot=False, prefix="", calib=False, parametric=False):
     if len(data) == 0:
         logger.warning("Warning: data should not be zero")
         return {
@@ -234,7 +236,7 @@ def compute_qampari_f1(data, cot=False, prefix="", calib=False, parametric=False
         if calib:
             # at least answerable
             union_ans_set = np.bitwise_or.reduce([doc["answers_found"] for doc in item['docs']]).tolist()
-            if any(union_ans_set) and (not fuzz.partial_ratio(normalize_answer(REJECTION_FLAG), normalize_answer(item['output'])) > REJECTION_FUZZ_THRESHOLD):
+            if any(union_ans_set) and (not fuzz.partial_ratio(normalize_answer(args.rejection_flag), normalize_answer(item['output'])) > args.rejection_threshold):
                 # ignore golden answers that are not recalled by given docs
                 answers = [[normalize_answer(x) for x in ans] for i, ans in enumerate(item['answers']) if union_ans_set[i] == 1]
             else:
@@ -272,23 +274,28 @@ def compute_qampari_f1(data, cot=False, prefix="", calib=False, parametric=False
     }
 
 
-def get_all_em5_scores(normalized_data, normalized_answered_data, normalized_answerable_data):
+def get_all_em5_scores(data: List[Dict], normalized_data: List[Dict], normalized_answered_data: List[Dict], normalized_answerable_data: List[Dict], args):
     result = {}
     result.update(_compute_incorrect_frequency(normalized_answered_data))
-    result.update(compute_qampari_f1(normalized_data, cot=False, prefix="regular_"))
-    result.update(compute_qampari_f1(normalized_answered_data, cot=False, prefix="answered_"))
-    result.update(compute_qampari_f1(normalized_answered_data, cot=False, prefix="calib_answered_", calib=True))
-    result.update(compute_qampari_f1(normalized_answerable_data, cot=False, prefix="calib_answerable_", calib=True))
-    result['parametric_qampari_rec_top5'] = result['answered_qampari_rec_top5'] - compute_qampari_f1(normalized_answered_data, cot=False, prefix="parametric_", calib=True, parametric=True)['parametric_qampari_rec_top5']
-    result["calib_qampari_em_f1"] = stats.hmean([result['calib_answered_qampari_f1_top5'], result['calib_answerable_qampari_f1_top5']])
+    result.update(compute_qampari_f1(normalized_data, args, prefix="regular_"))
+    result.update(compute_qampari_f1(normalized_answered_data, args, prefix="answered_"))
+    
+    if args.calib:
+        result.update(compute_qampari_f1(normalized_answered_data, args, prefix="calib_answered_", calib=True))
+        result.update(compute_qampari_f1(normalized_answerable_data, args, prefix="calib_answerable_", calib=True))
+
+    if args.parametric:
+        result['parametric_qampari_rec_top5'] = result['answered_qampari_rec_top5'] - compute_qampari_f1(normalized_answered_data, args, prefix="parametric_", calib=True, parametric=True)['parametric_qampari_rec_top5']
+        result["calib_qampari_em_f1"] = stats.hmean([result['calib_answered_qampari_f1_top5'], result['calib_answerable_qampari_f1_top5']])
     return result
 
 
 def compute_citation_metrics(data,
-                    decontext=False,
-                    concat=False,
-                    is_qampari=False,
-                    at_most_citations=None):
+                             args,
+                             decontext=False,
+                             concat=False,
+                             is_qampari=False,
+                             at_most_citations=None):
     """
     Compute AutoAIS score.
 
@@ -302,8 +309,8 @@ def compute_citation_metrics(data,
     global autoais_model, autoais_tokenizer
     if autoais_model is None:
         logger.info("Loading AutoAIS model...")
-        autoais_model = AutoModelForSeq2SeqLM.from_pretrained(AUTOAIS_MODEL, torch_dtype=torch.bfloat16, max_memory=get_max_memory(), device_map="auto")
-        autoais_tokenizer = AutoTokenizer.from_pretrained(AUTOAIS_MODEL, use_fast=False)
+        autoais_model = AutoModelForSeq2SeqLM.from_pretrained(args.autoais_model, torch_dtype=torch.bfloat16, max_memory=get_max_memory(), device_map="auto")
+        autoais_tokenizer = AutoTokenizer.from_pretrained(args.autoais_model, use_fast=False)
 
     logger.info(f"Running AutoAIS...")
 
@@ -414,7 +421,7 @@ def compute_citation_metrics(data,
         regular_ais_scores_prec.append(entail_prec / total_citations if total_citations > 0 else 0) # len(sents))
 
         # answered data
-        rejection = fuzz.partial_ratio(normalize_answer(REJECTION_FLAG), normalize_answer(item['output'])) > REJECTION_FUZZ_THRESHOLD
+        rejection = fuzz.partial_ratio(normalize_answer(args.rejection_flag), normalize_answer(item['output'])) > args.rejection_threshold
         if not rejection:
             answered_ais_scores.append(entail / len(sents))
             answered_ais_scores_prec.append(entail_prec / total_citations if total_citations > 0 else 0) # len(sents))
@@ -444,13 +451,13 @@ def compute_citation_metrics(data,
     }
 
 
-def get_citaion_scores(data, normalized_data, normalized_answered_data, normalized_answerable_data, args, is_qampari=False):
+def get_citation_scores(data: List[Dict], normalized_data: List[Dict], normalized_answered_data: List[Dict], normalized_answerable_data: List[Dict], args):
     result = {}
-    result.update(compute_citation_metrics(data, is_qampari=is_qampari, at_most_citations=args.at_most_citations))
+    result.update(compute_citation_metrics(data, args, is_qampari=args.is_qampari, at_most_citations=args.at_most_citations))
     return result
 
     
-def compute_macro_metrics(data):    
+def compute_macro_metrics(data, args):    
     reject_rec_num = 0
     reject_rec = 0
     reject_prec_num = 0
@@ -463,7 +470,7 @@ def compute_macro_metrics(data):
     
     for item in data:
         answerable = any(np.bitwise_or.reduce([doc["answers_found"] for doc in item['docs']]))
-        rejection = fuzz.partial_ratio(normalize_answer(REJECTION_FLAG), normalize_answer(item['output'])) > REJECTION_FUZZ_THRESHOLD
+        rejection = fuzz.partial_ratio(normalize_answer(args.rejection_flag), normalize_answer(item['output'])) > args.rejection_threshold
         
         # Rejection recall
         if not answerable:
@@ -507,6 +514,10 @@ def compute_macro_metrics(data):
         "macro_avg": np.mean([reject_recall, ans_recall]),
         "macro_f1": np.mean([reject_f1_score, ans_f1_score])
     }
+
+
+def get_macro_scores(data: List[Dict], normalized_data: List[Dict], normalized_answered_data: List[Dict], normalized_answerable_data: List[Dict], args):
+    return compute_macro_metrics(data, args)
     
 
 def _compute_incorrect_frequency(answered_data):

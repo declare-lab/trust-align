@@ -1,8 +1,10 @@
-import torch
-import time
 import re
 import string
+import time
+
+import torch
 from logging_config import logger
+
 
 def normalize_answer(s):
     def remove_articles(text):
@@ -32,7 +34,6 @@ def get_max_memory():
     n_gpus = torch.cuda.device_count()
     max_memory = {i: max_memory for i in range(n_gpus)}
     return max_memory
-
 
 
 def load_model(model_name_or_path, dtype=torch.float16, int8=False, lora_path=None, reserve_memory=10):
