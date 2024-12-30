@@ -1,9 +1,13 @@
 [tool.poetry]
 name = "trust-eval"
 version = "0.1.0"
-description = ""
+description = "Metric to measure RAG responses with inline citations"
 authors = ["Shang Hong Sim <simshanghong@gmail.com>"]
+license = "CC BY-NC 4.0"
 readme = "README.md"
+homepage = "https://github.com/shanghongsim/trust-eval"
+repository = "https://github.com/shanghongsim/trust-eval"
+keywords = ["RAG", "evaluation", "metrics", "citation"]
 
 [tool.poetry.dependencies]
 python = "3.10.13"
@@ -15,7 +19,12 @@ scipy = "^1.14.1"
 colorlog = "^6.9.0"
 nltk = "^3.9.1"
 
-
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.classifiers]
+# Optional: Trove classifiers to specify package metadata
+Programming Language :: Python :: 3
+License :: Creative Commons Attribution Non Commercial 4.0
+Operating System :: OS Independent

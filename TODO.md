@@ -8,6 +8,8 @@
 - [x] metric.py: in progress
 - [x] evaluator.py: in progress
 - [ ] final check
+- [ ] populate `__init__`
 - [ ] perform an example
 - [ ] testing
 - [ ] write test cases
+- [ ] publish on to pypi
