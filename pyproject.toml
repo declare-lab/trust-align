@@ -18,13 +18,8 @@ python-levenshtein = "^0.26.1"
 scipy = "^1.14.1"
 colorlog = "^6.9.0"
 nltk = "^3.9.1"
+py3nvml = "^0.2.7"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.classifiers]
-# Optional: Trove classifiers to specify package metadata
-Programming Language :: Python :: 3
-License :: Creative Commons Attribution Non Commercial 4.0
-Operating System :: OS Independent
