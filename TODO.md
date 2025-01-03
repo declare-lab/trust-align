@@ -15,10 +15,10 @@
 - [x] publish on to pypi
 - [x] fill out concepts/datasets.md
 - [x] create a quickstart
+- [x] fill out concepts/metrics.md
 
 - [ ] add more docstrings
 - [ ] type check more functions
-- [ ] fill out concepts/metrics.md
-- [ ] integrate to llamaindex
+- [ ] integrate  tollamaindex
 - [ ] integrate to langchain
 - [ ] langchain blog

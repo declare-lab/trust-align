@@ -74,6 +74,8 @@ evaluator.compute_metrics()
 evaluator.save_results()
 ```
 
+Please refer to [quickstart](./docs/quickstart/) for the complete guide.
+
 ## Contact 📬
 
 For questions or feedback, reach out to Shang Hong (`simshanghong@gmail.com`).
