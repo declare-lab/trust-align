@@ -71,7 +71,7 @@ class ResponseGeneratorConfig(BaseConfig):
     rejection: bool = True  # Whether to use rejection demos
 
     # Model and naming
-    model: str = None  # Model to use
+    model: str  # Model to use
     openai_api: bool = False  # Whether to use OpenAI API
     azure: bool = False  # Whether to use Azure OpenAI API
     lora_path: Optional[str] = None  # Path to LoRA training checkpoint

@@ -10,6 +10,15 @@
 - [x] final check
 - [x] populate `__init__`
 - [x] perform an example
-- [x] testing
+- [x] test pip install
 - [ ] write test cases
 - [x] publish on to pypi
+- [x] fill out concepts/datasets.md
+- [x] create a quickstart
+
+- [ ] add more docstrings
+- [ ] type check more functions
+- [ ] fill out concepts/metrics.md
+- [ ] integrate to llamaindex
+- [ ] integrate to langchain
+- [ ] langchain blog
