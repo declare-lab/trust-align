@@ -1,17 +1,60 @@
 import os
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, List, Literal, Optional
 
 import yaml
-from logging_config import logger
+
+from .logging_config import logger
 
 
 @dataclass
-class ResponseGeneratorConfig:
+class BaseConfig(ABC):
     yaml_path: str
-    # General settings
     data_type: Literal["asqa", "qampari", "eli5"] = None
+
+    @classmethod
+    def from_yaml(cls, yaml_path: str) -> "BaseConfig":
+        """
+        Load configuration from a YAML file and update the default instance.
+        """
+        with open(yaml_path, "r") as file:
+            yaml_data = yaml.safe_load(file)
+        
+        data_type = yaml_data.get("data_type")
+        if not data_type:
+            raise ValueError("The YAML file must specify 'data_type'.")
+
+        config = cls(yaml_path=yaml_path, data_type=data_type)
+        config.set_defaults()
+        config.update_from_dict(yaml_data)
+        return config
+    
+    def update_from_dict(self, config_dict: dict):
+        """
+        Update the Config dataclass fields from a dictionary.
+        """
+        for key, value in config_dict.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+    
+    def __post_init__(self):
+        """
+        Automatically set default configurations based on the evaluation type after initialization.
+        """
+        self.set_defaults()
+
+    @abstractmethod
+    def set_defaults(self):
+        """This method must be implemented by subclasses."""
+        pass
+  
+
+@dataclass
+class ResponseGeneratorConfig(BaseConfig):
+    
+    # General settings
     prompt_file: Optional[str] = None  # Path to the prompt file
     eval_file: Optional[str] = None  # Path to the evaluation file
     output_path: Optional[str] = None  # Output directory for model's output
@@ -40,20 +83,7 @@ class ResponseGeneratorConfig:
     max_new_tokens: int = 300  # Maximum number of new tokens to generate
     max_length: int = 2048  # Maximum length for model input
     num_samples: int = 1  # Number of samples for multiple answers
-    
-    def __post_init__(self):
-        """
-        Automatically set default configurations based on the evaluation type after initialization.
-        """
-        self.set_defaults()
 
-    def update_from_dict(self, config_dict: dict):
-        """
-        Update the Config dataclass fields from a dictionary.
-        """
-        for key, value in config_dict.items():
-            if hasattr(self, key):
-                setattr(self, key, value)
     
     def _generate_default_output_path(self):
         base_dir = Path("output")  
@@ -61,20 +91,24 @@ class ResponseGeneratorConfig:
         file_name = f"{self.data_type}_eval_top100_calibrated.json"
         return str(base_dir / file_name)
     
-    def _generate_default_eval_file_path(self, data_type):
-        dir = os.path.dirname(os.path.abspath(__file__))
-        return f"{dir}/eval_data/{data_type}_eval_top100_calibrated.json"
+    def _generate_default_eval_file_path(self):
+        base_dir = Path("eval_data")
+        base_dir.mkdir(parents=True, exist_ok=True)  
+        file_name = f"{self.data_type}_eval_top100_calibrated.json"
+        return str(base_dir / file_name)
 
-    def _generate_prompt_path(self, data_type):
-        dir = os.path.dirname(os.path.abspath(__file__))
+    def _generate_prompt_path(self):
+        base_dir = Path("prompts")
+        base_dir.mkdir(parents=True, exist_ok=True)  
         
         closedbook, rejection = "", "_rejection"
         if not self.rejection:
             rejection = "_default"
         if self.ndoc == 0:
             closedbook = "_closedbook"
+        file_name = f"{self.data_type}{closedbook}{rejection}.json"
 
-        return f"{dir}/prompts/{data_type}{closedbook}{rejection}.json"
+        return str(base_dir / file_name)
 
 
     def set_defaults(self):
@@ -85,33 +119,14 @@ class ResponseGeneratorConfig:
             self.output_path = self._generate_default_output_path()
         
         if self.eval_file is None:
-            self.eval_file = self._generate_default_eval_file_path(self.data_type)
+            self.eval_file = self._generate_default_eval_file_path()
 
         if self.prompt_file is None:
-            self.prompt_file = self._generate_prompt_path(self.data_type)
+            self.prompt_file = self._generate_prompt_path()
 
-
-    @classmethod
-    def from_yaml(cls, yaml_path: str) -> "ResponseGeneratorConfig":
-        """
-        Load configuration from a YAML file and update the default instance.
-        """
-        with open(yaml_path, "r") as file:
-            yaml_data = yaml.safe_load(file)
-        
-        data_type = yaml_data.get("data_type")
-        if not data_type:
-            raise ValueError("The YAML file must specify 'data_type'.")
-
-        config = cls(yaml_path=yaml_path, data_type=data_type)
-        config.set_defaults()
-        config.update_from_dict(yaml_data)
-        return config
 
 @dataclass
-class EvaluationConfig:
-    yaml_path: str
-    data_type: Literal["asqa", "qampari", "eli5"] = None  # Data type for evaluation
+class EvaluationConfig(BaseConfig):
 
     # Eval settings
     eval_file: Optional[str] = None
@@ -131,13 +146,18 @@ class EvaluationConfig:
     rejection_flag: str = "I apologize, but I couldn't find an answer"
     rejection_threshold: int = 85
     autoais_model: str = "google/t5_xxl_true_nli_mixture"
-
-    def __post_init__(self):
-        """
-        Automatically set default configurations based on the evaluation type after initialization.
-        """
-        self.set_defaults()
-        
+    
+    def _generate_default_output_path(self):
+        base_dir = Path("results")  
+        base_dir.mkdir(parents=True, exist_ok=True)  
+        file_name = f"{self.eval_type}_evaluation.json"
+        return str(base_dir / file_name)
+    
+    def _generate_default_eval_file_path(self):
+        base_dir = Path("output")  
+        file_name = f"{self.data_type}_eval_top100_calibrated.json"
+        return str(base_dir / file_name)
+    
     def set_defaults(self):
         """
         Set default configurations based on the evaluation type.
@@ -165,43 +185,4 @@ class EvaluationConfig:
             self.output_path = self._generate_default_output_path()
         
         if self.eval_file is None:
-            self.eval_file = self._generate_default_eval_file_path(self.data_type)
-
-
-    def update_from_dict(self, config_dict: dict):
-        """
-        Update the Config dataclass fields from a dictionary.
-        """
-        for key, value in config_dict.items():
-            if hasattr(self, key):
-                setattr(self, key, value)
-
-    @classmethod
-    def from_yaml(cls, yaml_path: str) -> "EvaluationConfig":
-        """
-        Load configuration from a YAML file and update the default instance.
-        """
-        with open(yaml_path, "r") as file:
-            yaml_data = yaml.safe_load(file)
-        
-        data_type = yaml_data.get("data_type")
-        if not data_type:
-            raise ValueError("The YAML file must specify 'data_type'.")
-
-        config = cls(yaml_path=yaml_path, data_type=data_type)
-        config.set_defaults()
-        config.update_from_dict(yaml_data)
-        return config
-
-    
-    def _generate_default_output_path(self):
-        base_dir = Path("results")  
-        base_dir.mkdir(parents=True, exist_ok=True)  
-        file_name = f"{self.eval_type}_evaluation.json"
-        return str(base_dir / file_name)
-    
-    def _generate_default_eval_file_path(self, data_type):
-        dir = os.path.dirname(os.path.abspath(__file__))
-        return f"{dir}/output/{data_type}_eval_top100_calibrated.json"
-
-
+            self.eval_file = self._generate_default_eval_file_path()

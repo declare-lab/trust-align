@@ -6,11 +6,12 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from config import ResponseGeneratorConfig
-from llm import LLM
-from logging_config import logger
 from tqdm import tqdm
-from utils import make_demo
+
+from .config import ResponseGeneratorConfig
+from .llm import LLM
+from .logging_config import logger
+from .utils import make_demo
 
 
 class ResponseGenerator:

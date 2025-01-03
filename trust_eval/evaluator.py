@@ -5,10 +5,12 @@ import json
 
 import numpy as np
 import scipy.stats as stats
-from config import EvaluationConfig
 from fuzzywuzzy import fuzz
-from logging_config import logger
-from metrics import (
+from tqdm import tqdm
+
+from .config import EvaluationConfig
+from .logging_config import logger
+from .metrics import (
     compute_trust_score,
     get_all_cm_scores,
     get_all_em5_scores,
@@ -17,8 +19,7 @@ from metrics import (
     get_citation_scores,
     get_macro_scores,
 )
-from tqdm import tqdm
-from utils import normalize_answer, remove_citations
+from .utils import normalize_answer, remove_citations
 
 
 class Evaluator:

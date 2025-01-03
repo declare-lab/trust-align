@@ -6,11 +6,12 @@ import numpy as np
 import scipy.stats as stats
 import torch
 from fuzzywuzzy import fuzz
-from logging_config import logger
 from nltk import sent_tokenize
 from tqdm import tqdm
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
-from utils import *
+
+from .logging_config import logger
+from .utils import *
 
 global autoais_model, autoais_tokenizer
 autoais_model, autoais_tokenizer = None, None

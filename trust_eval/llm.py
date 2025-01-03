@@ -6,7 +6,8 @@ import logging
 import os
 
 import openai
-from utils import load_model, load_vllm
+
+from .utils import load_model, load_vllm
 
 logger = logging.getLogger(__name__)
 

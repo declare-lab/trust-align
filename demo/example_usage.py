@@ -1,8 +1,8 @@
 
-from config import EvaluationConfig, ResponseGeneratorConfig
-from evaluator import Evaluator
-from logging_config import logger
-from response_generator import ResponseGenerator
+from trust_eval.config import EvaluationConfig, ResponseGeneratorConfig
+from trust_eval.evaluator import Evaluator
+from trust_eval.logging_config import logger
+from trust_eval.response_generator import ResponseGenerator
 
 # Generate responses
 generator_config = ResponseGeneratorConfig.from_yaml(yaml_path="generator_config.yaml")

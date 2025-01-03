@@ -35,6 +35,7 @@ poetry install
 import nltk
 nltk.download('punkt_tab')
 ```
+Install vLLM with CUDA 12.1.
 
 ## Example usage
 

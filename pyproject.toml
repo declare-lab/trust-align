@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "trust-eval"
+name = "trust_eval"
 version = "0.1.0"
 description = "Metric to measure RAG responses with inline citations"
 authors = ["Shang Hong Sim <simshanghong@gmail.com>"]
@@ -8,9 +8,10 @@ readme = "README.md"
 homepage = "https://github.com/shanghongsim/trust-eval"
 repository = "https://github.com/shanghongsim/trust-eval"
 keywords = ["RAG", "evaluation", "metrics", "citation"]
+exclude = ["demo"]
 
 [tool.poetry.dependencies]
-python = "3.10.13"
+python = ">=3.10,<3.12"
 vllm = "^0.6.6.post1"
 peft = "^0.14.0"
 fuzzywuzzy = "^0.18.0"

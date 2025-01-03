@@ -3,7 +3,8 @@ import string
 import time
 
 import torch
-from logging_config import logger
+
+from .logging_config import logger
 
 
 def normalize_answer(s):
