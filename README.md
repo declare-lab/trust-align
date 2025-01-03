@@ -6,17 +6,15 @@ A comprehensive tool for evaluating the trustworthiness of inline-cited outputs 
 
 This is the official implementation of the metrics introduced in the paper *"Measuring and Enhancing Trustworthiness of LLMs in RAG through Grounded Attributions and Learning to Refuse"* (under review).
 
----
-
 ## Key Features 🚀
+
 - 📊 **Benchmark Datasets**: A curated collection of datasets in standardized formats (e.g., ASQA).
 - 📈 **Evaluation Metrics**: Tools for measuring correctness, citation quality, and groundedness.
-
----
 
 ## Installation 🛠️
 
 ### Prerequisites
+
 - **OS:** Linux  
 - **Python:** Versions 3.10 – 3.12 (preferably 3.10.13)  
 - **GPU:** Compute capability 7.0 or higher (e.g., V100, T4, RTX20xx, A100, L4, H100)
@@ -24,17 +22,22 @@ This is the official implementation of the metrics introduced in the paper *"Mea
 ### Steps
 
 1. **Set up a Python environment**
+
    ```bash
    conda create -n trust_eval python=3.10.13
    conda activate trust_eval
    ```
+
 2. **Install dependencies**
+
    ```bash
    pip install trust_eval
    ```
+
    > Note: that vLLM will be installed with CUDA 12.1. Please ensure your CUDA setup is compatible.
 
 3. **Set up NLTK**
+
    ```bash
    import nltk
    nltk.download('punkt_tab')
@@ -43,12 +46,12 @@ This is the official implementation of the metrics introduced in the paper *"Mea
 4. **Download benchmark datasets**
 Please download the evaluation dataset from [Huggingface](https://huggingface.co/datasets/declare-lab/Trust-Score/tree/main/Trust-Score) and place the folder as the same level as the prompt folder (see demo for example).
 
-
 ## Quickstart 🔥
 
 Evaluate your RAG setup with these main 8 lines.
 
 ### Generating Responses
+
 ```python
 from config import EvaluationConfig, ResponseGeneratorConfig
 from evaluator import Evaluator
@@ -65,6 +68,7 @@ generator.save_responses()
 ```
 
 ### Evaluating Responses
+
 ```python
 # Configure the evaluator
 evaluation_config = EvaluationConfig.from_yaml(yaml_path="eval_config.yaml")
@@ -74,8 +78,6 @@ evaluator = Evaluator(evaluation_config)
 evaluator.compute_metrics()
 evaluator.save_results()
 ```
-
----
 
 ## Contact 📬
 
