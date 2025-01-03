@@ -7,9 +7,9 @@
 - [x] config.py: eval config
 - [x] metric.py: in progress
 - [x] evaluator.py: in progress
-- [ ] final check
-- [ ] populate `__init__`
-- [ ] perform an example
-- [ ] testing
+- [x] final check
+- [x] populate `__init__`
+- [x] perform an example
+- [x] testing
 - [ ] write test cases
-- [ ] publish on to pypi
+- [x] publish on to pypi
