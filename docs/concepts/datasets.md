@@ -50,7 +50,7 @@ The benchmark datasets used in this paper are adapted from [ALCE](https://arxiv.
 
 ## ASQA
 
-```json
+```javascript
 // A list of dictionaries where each dictionary contains the information for one sample
 [ ...
     {   // The question asked.
@@ -88,7 +88,7 @@ The benchmark datasets used in this paper are adapted from [ALCE](https://arxiv.
 
 ## QAMPARI
 
-```json
+```javascript
 [ ...
   // A list of dictionaries where each dictionary contains the information for one sample
   {
@@ -123,7 +123,7 @@ The benchmark datasets used in this paper are adapted from [ALCE](https://arxiv.
 
 ## ELI5
 
-```json
+```javascript
 [...
   // A list of dictionaries where each dictionary contains the information for one sample
   {
@@ -161,7 +161,7 @@ The benchmark datasets used in this paper are adapted from [ALCE](https://arxiv.
 
 ## ExpertQA
 
-```json
+```javascript
 [...
   // A list of dictionaries where each dictionary contains the information for one sample
   {
