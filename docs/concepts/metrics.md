@@ -82,7 +82,7 @@ Sample output:
     // prop of qns that are answered and ground truth unanswerable that response covered all ground truth claims 
     "parametric_str_hit": 0.0,
 
-    // Cittaion quality metrics
+    // Citation quality metrics
 
     // (Avg across all qns) Does the set of citations support statement si? 
     "regular_citation_rec": 28.333333333333332,

@@ -19,6 +19,6 @@
 
 - [ ] add more docstrings
 - [ ] type check more functions
-- [ ] integrate  tollamaindex
+- [ ] integrate  to llamaindex
 - [ ] integrate to langchain
 - [ ] langchain blog

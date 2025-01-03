@@ -171,3 +171,5 @@ Sample output:
     "trust_score": 72.34848484848486
 }
 ```
+
+For a more in-depth explanation of the output, please see [metrics](../concepts/metrics.md).
