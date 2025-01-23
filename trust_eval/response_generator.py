@@ -50,25 +50,18 @@ class ResponseGenerator:
         self.prompt_data = json.load(open(self.prompt_file))
         self.eval_data = json.load(open(self.eval_file))[:10]
 
-    def generate_responses(self):
+    def generate_responses(self, data = None):
         """Generate responses for evaluation data."""
+
+        if data is None:
+            data = self.eval_data
         
         np.random.seed(self.config.seed)
 
-        # Generate demonstration part
-        head_prompt = self._generate_head_prompt()
-
         # Add prompts to evaluation data
         incomplete_doc_list = 0
-        for idx, eval_item in enumerate(tqdm(self.eval_data)):
-            eval_item['prompt'] = head_prompt + make_demo(
-                eval_item, 
-                prompt=self.prompt_data["demo_prompt"], 
-                ndoc=self.config.ndoc, 
-                doc_prompt=self.prompt_data["doc_prompt"],
-                instruction=self.prompt_data["instruction"], 
-                test=True
-            )
+        for idx, eval_item in enumerate(tqdm(data)):
+            eval_item['prompt'] = self.construct_prompt(eval_item)
             doc_list = eval_item["docs"][:self.config.ndoc]
             eval_item['docs'] = doc_list
             if len(doc_list) < self.config.ndoc:
@@ -79,7 +72,7 @@ class ResponseGenerator:
 
         # Generate responses
         if self.config.vllm:
-            prompts = [item['prompt'] for item in self.eval_data for _ in range(self.config.num_samples)]
+            prompts = [item['prompt'] for item in data for _ in range(self.config.num_samples)]
             prompt_lengths = [len(self.llm.tokenizer.tokenize(prompt)) for prompt in prompts]
             max_prompt_len = max(prompt_lengths)
 
@@ -97,40 +90,50 @@ class ResponseGenerator:
             torch.cuda.empty_cache()
             
             # Post-process each output
-            for i in range(len(self.eval_data)):
+            for idx, item in enumerate(tqdm(data)):
                 output_array = []
-                for j, output in enumerate(batch_outputs[i:i + self.config.num_samples]):
+                for j, output in enumerate(batch_outputs[idx:idx + self.config.num_samples]):
                     output_array.append(output)
                     output_array[-1] = output_array[-1].replace("<|im_end|>", "").rstrip()
                     if output_array[-1].endswith("End."):
                         output_array[-1] = output_array[-1][:-len("End.")]
 
-                self.eval_data[i]['output'] = output_array if len(output_array) > 1 else output_array[0]
+                item['output'] = output_array if len(output_array) > 1 else output_array[0]
 
         else:
-            for idx, item in enumerate(tqdm(self.eval_data)):
+            for idx, item in enumerate(tqdm(data)):
                 prompt = item['prompt']
-                prompt_len = len(self.llm.tokenizer.tokenize(prompt))
+                item['output'] = self.generate_response_single_query(prompt)
 
-                if idx == 0:
-                    print(prompt)
+        self.eval_data = data
+        return data
 
-                output_array = []
-                for _ in range(self.config.num_samples):
-                
-                    logger.info(f"N: {prompt_len}")
-                    output_array.append(self.llm.generate(prompt, min(self.config.max_new_tokens, self.config.max_length-prompt_len)))
-                    item['prompt'] = prompt
-                    
-                    output_array[-1] = output_array[-1].replace("<|im_end|>", "").rstrip()
-                    if output_array[-1].endswith("End."):
-                        output_array[-1] = output_array[-1][:-len("End.")]
-                
-                item['output'] = output_array if len(output_array) > 1 else output_array[0]
+    def generate_response_single_query(self, prompt):
+        prompt_len = len(self.llm.tokenizer.tokenize(prompt))
+
+        output_array = []
+        for _ in range(self.config.num_samples):
+        
+            logger.info(f"Max prompt length: {prompt_len}")
+            output_array.append(self.llm.generate(prompt, min(self.config.max_new_tokens, self.config.max_length-prompt_len)))
+            
+            output_array[-1] = output_array[-1].replace("<|im_end|>", "").rstrip()
+            if output_array[-1].endswith("End."):
+                output_array[-1] = output_array[-1][:-len("End.")]
+        
+        return output_array if len(output_array) > 1 else output_array[0]
     
-
-        return self.eval_data
-
+    def construct_prompt(self, eval_item):
+        head_prompt = self._generate_head_prompt()
+        return head_prompt + make_demo(
+            eval_item, 
+            prompt=self.prompt_data["demo_prompt"], 
+            ndoc=self.config.ndoc, 
+            doc_prompt=self.prompt_data["doc_prompt"],
+            instruction=self.prompt_data["instruction"], 
+            test=True
+        )
+    
     def _generate_head_prompt(self):
         """Generate the head prompt based on demonstrations."""
         head_prompt = ""

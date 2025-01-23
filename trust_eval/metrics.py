@@ -10,11 +10,10 @@ from nltk import sent_tokenize
 from tqdm import tqdm
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
+from .auto_ais_loader import get_autoais_model_and_tokenizer
 from .logging_config import logger
 from .utils import *
 
-global autoais_model, autoais_tokenizer
-autoais_model, autoais_tokenizer = None, None
 
 def compute_len(data):
     """Compute average length of predictions."""
@@ -29,6 +28,31 @@ def compute_len(data):
         cntr += 1
     return res / cntr
 
+def _is_answerable(supported_claims):
+    return any(supported_claims)
+
+def _is_refusal(item, args):
+    return not fuzz.partial_ratio(normalize_answer(args.rejection_flag), normalize_answer(item['output'])) > args.rejection_threshold
+
+def _compute_exact_match_single_query(item, args, calib=False, parametric=False):
+    loc_acc = []
+    if calib:
+        supported_claims = np.bitwise_or.reduce([doc["answers_found"] for doc in item['docs']]).tolist()
+        if _is_answerable(supported_claims) and _is_refusal(item, args):
+            for idx, ans_list in enumerate(item['answers']):
+                # ignore gold answers that are not supported by given docs
+                if supported_claims[idx] == 1:
+                    loc_acc.append(_exact_presence(ans_list, item["output"]))
+        else:
+            loc_acc.append(False)
+    else:
+        for ans_list in item['answers']:
+            loc_acc.append(_exact_presence(ans_list, item["output"]))
+
+    if calib and parametric:
+        return np.sum(a=loc_acc)/len(supported_claims)
+    else:
+        return np.mean(loc_acc)
 
 def compute_exact_match(data, args, calib=False, parametric=False):
     """
@@ -71,59 +95,31 @@ def compute_exact_match(data, args, calib=False, parametric=False):
         return 0, 0
 
     acc = []
-    hit = []
 
     for item in tqdm(data):
-        loc_acc = []
-        if calib:
-            # at least answerable
-            union_ans_set = np.bitwise_or.reduce([doc["answers_found"] for doc in item['docs']]).tolist()
-            if any(union_ans_set) and (not fuzz.partial_ratio(normalize_answer(args.rejection_flag), normalize_answer(item['output'])) > args.rejection_threshold):
-                for i, ans_list in enumerate(item['answers']):
-                    # ignore golden answers that are not recalled by given docs
-                    if union_ans_set[i] == 1:
-                        loc_acc.append(_exact_presence(ans_list, item["output"]))
-            else:
-                loc_acc.append(False)
-        else:
-            for ans_list in item['answers']:
-                loc_acc.append(_exact_presence(ans_list, item["output"]))
-                
-        if calib and parametric:
-            acc.append(np.sum(a=loc_acc)/len(union_ans_set))
-            hit.append( int(np.sum(loc_acc)/len(union_ans_set) == 1) )
-        else:
-            acc.append(np.mean(loc_acc))
-            hit.append( int(np.mean(loc_acc) == 1) )
-
-    return 100 * np.mean(acc), 100 * np.mean(hit)
-
+        acc.append(_compute_exact_match_single_query(item, args, calib=False, parametric=False))
+    return 100 * np.mean(acc)
 
 def get_all_em_scores(data: List[Dict], normalized_data: List[Dict], normalized_answered_data: List[Dict], normalized_answerable_data: List[Dict], args):
     result = {}
-    result['regular_str_em'], result['regular_str_hit'] = compute_exact_match(normalized_data, args)
-    result['answered_str_em'], result['answered_str_hit'] = compute_exact_match(normalized_answered_data, args)
+    result['regular_str_em'] = compute_exact_match(normalized_data, args)
+    result['answered_str_em'] = compute_exact_match(normalized_answered_data, args)
 
     if args.calib:
-        result['calib_answered_str_em'], result['calib_answered_str_hit'] = compute_exact_match(normalized_answered_data, args, calib=True)
-        result['calib_answerable_str_em'], result['calib_answerable_str_hit'] = compute_exact_match(normalized_answerable_data, args, calib=True)
+        result['calib_answered_str_em'] = compute_exact_match(normalized_answered_data, args, calib=True)
+        result['calib_answerable_str_em'] = compute_exact_match(normalized_answerable_data, args, calib=True)
         result['calib_str_em_f1'] = stats.hmean([result['calib_answered_str_em'], result['calib_answerable_str_em']])
 
     if args.parametric:
-        result['parametric_str_em'], result['parametric_str_hit'] = compute_exact_match(normalized_answered_data, args, calib=True, parametric=True)
-        result['parametric_str_em'], result['parametric_str_hit'] = result['answered_str_em'] - result['parametric_str_em'], result['answered_str_hit'] - result['parametric_str_hit']
+        result['parametric_str_em'] = compute_exact_match(normalized_answered_data, args, calib=True, parametric=True)
+        result['parametric_str_em'] = result['answered_str_em'] - result['parametric_str_em']
     
     return result
 
 
 def compute_claim_match(data, args, calib=False, parametric=False):
     
-    global autoais_model, autoais_tokenizer
-    if autoais_model is None:
-        logger.info("Loading AutoAIS model...")
-        autoais_model = AutoModelForSeq2SeqLM.from_pretrained(args.autoais_model, torch_dtype=torch.bfloat16, max_memory=get_max_memory(), device_map="auto")
-        autoais_tokenizer = AutoTokenizer.from_pretrained(args.autoais_model, use_fast=False)
-
+    autoais_model, autoais_tokenizer = get_autoais_model_and_tokenizer(args)
     logger.info("Computing claims...")
 
     regular_scores = []
@@ -141,14 +137,14 @@ def compute_claim_match(data, args, calib=False, parametric=False):
         
         if calib:
             calib_entail = 0
-            union_ans_set = np.bitwise_or.reduce([doc["answers_found"] for doc in item['docs']]).tolist()
+            supported_claims = np.bitwise_or.reduce([doc["answers_found"] for doc in item['docs']]).tolist()
         
         for i, claim in enumerate(claims):
-            ais_score = _run_nli_autoais(normalized_output, claim)
+            ais_score = _run_nli_autoais(normalized_output, claim, args)
             entail += ais_score
             if calib:
                 # ignore golden answers that are not recalled by given docs
-                if union_ans_set[i] == 1:
+                if supported_claims[i] == 1:
                     calib_entail += ais_score
         
         # answered/answerable condition
@@ -159,18 +155,18 @@ def compute_claim_match(data, args, calib=False, parametric=False):
 
         if calib:
             if not rejection:    
-                if any(union_ans_set):
-                    calib_answered_scores.append(calib_entail / sum(union_ans_set))
+                if any(supported_claims):
+                    calib_answered_scores.append(calib_entail / sum(supported_claims))
                     if parametric:
-                        parametric_answered_scores.append(calib_entail / len(union_ans_set))
+                        parametric_answered_scores.append(calib_entail / len(supported_claims))
                 else:
                     calib_answered_scores.append(0)
                     if parametric:
                         parametric_answered_scores.append(0)
             
-            if any(union_ans_set):
+            if any(supported_claims):
                 if not rejection:
-                    calib_answerable_scores.append(calib_entail / sum(union_ans_set))
+                    calib_answerable_scores.append(calib_entail / sum(supported_claims))
                 else:
                     calib_answerable_scores.append(0)            
 
@@ -237,10 +233,10 @@ def compute_qampari_f1(data, args, cot=False, prefix="", calib=False, parametric
         
         if calib:
             # at least answerable
-            union_ans_set = np.bitwise_or.reduce([doc["answers_found"] for doc in item['docs']]).tolist()
-            if any(union_ans_set) and (not fuzz.partial_ratio(normalize_answer(args.rejection_flag), normalize_answer(item['output'])) > args.rejection_threshold):
+            supported_claims = np.bitwise_or.reduce([doc["answers_found"] for doc in item['docs']]).tolist()
+            if any(supported_claims) and (not fuzz.partial_ratio(normalize_answer(args.rejection_flag), normalize_answer(item['output'])) > args.rejection_threshold):
                 # ignore golden answers that are not recalled by given docs
-                answers = [[normalize_answer(x) for x in ans] for i, ans in enumerate(item['answers']) if union_ans_set[i] == 1]
+                answers = [[normalize_answer(x) for x in ans] for i, ans in enumerate(item['answers']) if supported_claims[i] == 1]
             else:
                 answers = [['']]
         else:
@@ -250,8 +246,8 @@ def compute_qampari_f1(data, args, cot=False, prefix="", calib=False, parametric
         
         if calib and parametric:
             prec.append(sum([p in flat_answers for p in preds]) / len(preds) if len(preds) > 0 else 0)
-            rec.append(sum([any([x in preds for x in a]) for a in answers]) / len(union_ans_set))
-            rec_top5.append(min(5, sum([any([x in preds for x in a]) for a in answers])) / min(5, len(union_ans_set)))
+            rec.append(sum([any([x in preds for x in a]) for a in answers]) / len(supported_claims))
+            rec_top5.append(min(5, sum([any([x in preds for x in a]) for a in answers])) / min(5, len(supported_claims)))
         else:
             prec.append(sum([p in flat_answers for p in preds]) / len(preds) if len(preds) > 0 else 0)
             rec.append(sum([any([x in preds for x in a]) for a in answers]) / len(answers))
@@ -307,12 +303,6 @@ def compute_citation_metrics(data,
         citation: check citations and use the corresponding references.
         decontext: decontextualize the output
     """
-
-    global autoais_model, autoais_tokenizer
-    if autoais_model is None:
-        logger.info("Loading AutoAIS model...")
-        autoais_model = AutoModelForSeq2SeqLM.from_pretrained(args.autoais_model, torch_dtype=torch.bfloat16, max_memory=get_max_memory(), device_map="auto")
-        autoais_tokenizer = AutoTokenizer.from_pretrained(args.autoais_model, use_fast=False)
 
     logger.info(f"Running AutoAIS...")
 
@@ -371,7 +361,7 @@ def compute_citation_metrics(data,
 
             # If not directly rejected by citation format error, calculate the recall score
             if joint_entail == -1: 
-                joint_entail = _run_nli_autoais(joint_passage, target_sent)
+                joint_entail = _run_nli_autoais(joint_passage, target_sent, args)
                 autoais_log.append({
                     "question": item['question'],
                     "output": item['output'],
@@ -392,14 +382,14 @@ def compute_citation_metrics(data,
                 for psgs_id in ref:
                     # condition A
                     passage = _format_document(item['docs'][psgs_id]) 
-                    nli_result = _run_nli_autoais(passage, target_sent)
+                    nli_result = _run_nli_autoais(passage, target_sent, args)
 
                     # condition B
                     if not nli_result:
                         subset_exclude = copy.deepcopy(ref)
                         subset_exclude.remove(psgs_id)
                         passage = '\n'.join([_format_document(item['docs'][pid]) for pid in subset_exclude])
-                        nli_result = _run_nli_autoais(passage, target_sent)
+                        nli_result = _run_nli_autoais(passage, target_sent, args)
                         # check if it could support any claims within the subset_exclude
                         subset_coverage = np.bitwise_or.reduce([item['docs'][pid]['answers_found'] for pid in subset_exclude])
                         contained = False
@@ -534,11 +524,11 @@ def _compute_incorrect_frequency(answered_data):
     presence_list = []
     absence_list = []
     for item in answered_data:
-        union_ans_set = np.bitwise_or.reduce([doc["answers_found"] for doc in item['docs']]).tolist()
+        supported_claims = np.bitwise_or.reduce([doc["answers_found"] for doc in item['docs']]).tolist()
         calib_ground_truths = []  
         for i, ans in enumerate(item['answers']):
             # ignore golden answers that are not recalled by given docs
-            if union_ans_set[i] == 1:
+            if supported_claims[i] == 1:
                 calib_ground_truths.append(ans)
         
         o = item['output']        
@@ -620,12 +610,13 @@ def _compute_exact(a_gold, a_pred):
     return int(normalize_answer(a_gold) == normalize_answer(a_pred))
 
 
-def _run_nli_autoais(passage, claim):
+def _run_nli_autoais(passage, claim, args):
     """
     Run inference for assessing AIS between a premise and hypothesis.
     Adapted from https://github.com/google-research-datasets/Attributed-QA/blob/main/evaluation.py
     """
-    global autoais_model, autoais_tokenizer
+    autoais_model, autoais_tokenizer = get_autoais_model_and_tokenizer(args)
+
     input_text = "premise: {} hypothesis: {}".format(passage, claim)
     input_ids = autoais_tokenizer(input_text, return_tensors="pt").input_ids.to(autoais_model.device)
     with torch.inference_mode():

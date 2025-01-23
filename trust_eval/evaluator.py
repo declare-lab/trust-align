@@ -124,6 +124,7 @@ class Evaluator:
 
         # Compute metrics
         logger.info("Computing basic stats...")
+        self.result["num_samples"] = len(self.eval_data)
         metric_funcs = [get_basic_stats, get_macro_scores]
         for func in metric_funcs:
             metric_results = func(
