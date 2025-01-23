@@ -1,5 +1,7 @@
 # Measuring and Enhancing Trustworthiness of LLMs in RAG through Grounded Attributions and Learning to Refuse
 
+> 📣 This paper has been accepted to ICLR 2025!
+
 > 📣 We are releasing Trust-Score, a holistic evaluation of
 the trustworthiness of LLMs in a RAG framework, and the Trust-Align framework that aligns LLMs for higher Trust-Score. 
 [Paper](https://arxiv.org/abs/2409.11242)
