@@ -1,3 +1,8 @@
+import gc
+import json
+
+import torch
+
 from trust_eval.config import EvaluationConfig, ResponseGeneratorConfig
 from trust_eval.data import construct_data
 from trust_eval.evaluator import Evaluator
@@ -37,4 +42,3 @@ logger.info(evaluation_config)
 evaluator = Evaluator(evaluation_config)
 evaluator.compute_metrics()
 evaluator.save_results(output_path = "results/custom_data.json")
-

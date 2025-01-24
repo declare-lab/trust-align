@@ -166,3 +166,4 @@ prompts/
 results/
 *.pkl
 *.tsv
+log/

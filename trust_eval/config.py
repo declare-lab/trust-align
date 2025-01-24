@@ -29,7 +29,7 @@ class ResponseGeneratorConfig(BaseConfig):
     # General settings
     yaml_path: str
     model: str = "Qwen/Qwen2.5-3B-Instruct" # Model to use
-    data_type: Literal["asqa", "qampari", "eli5"] = None
+    data_type: Literal["asqa", "qampari", "eli5"] = "eli5"
     prompt_file: Optional[str] = None  # Path to the prompt file
     eval_file: Optional[str] = None  # Path to the evaluation file
     output_path: Optional[str] = None  # Output directory for model's output
@@ -88,10 +88,10 @@ class EvaluationConfig(BaseConfig):
 
     # Eval settings
     yaml_path: str
-    data_type: Literal["asqa", "qampari", "eli5"] = None
+    data_type: Literal["asqa", "qampari", "eli5"] = "eli5"
     eval_file: Optional[str] = None
     output_path: str = None  # output file path for evaluation result (required)
-    eval_type: Literal["em", "em@5", "cm"] = "em"  # evaluation type for different dataset format
+    eval_type: Literal["em", "em@5", "cm"] = "cm"  # evaluation type for different dataset format
 
     # correctness configs
     compute_correctness: bool = True

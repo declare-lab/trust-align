@@ -1,4 +1,5 @@
 import csv
+import gc
 import os
 import pickle
 import time
@@ -100,6 +101,10 @@ def gtr_wiki_query(queries, top_k=5):
                 "score": score[i].item()
             })
         results.append(query_results)
+    
+    del gtr_emb, query_embeddings # Free GPU memory
+    gc.collect()
+    torch.cuda.empty_cache()
 
     # Return a single result if input was a single query
     return results[0] if len(results) == 1 else results
