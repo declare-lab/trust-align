@@ -1,13 +1,5 @@
 # List of available metrics
 
-<img src="../../assets/trust_score.png" alt="Trust-Score" width="100%">
-
-Trust-Score is a metric that comprehensively evaluates LLM trustworthiness on three main axes:
-
-1) **Response Correctness**: Correctness of the generated claims
-2) **Attribution Quality**: Quality of citations generated. Concerns the recall (Are generated statements well-supported by the set citations?) and precision (Are the citations relevant to the statements?) of citations.
-3) **Refusal Groundedness**: Ability of the model to discern if the question can be answered given the documents
-
 Sample output:
 
 ```javascript
@@ -52,35 +44,20 @@ Sample output:
     // Regardless of response type (refusal or answered), check if ground truth claim is in the reponse. 
     "regular_str_em": 41.666666666666664,
 
-    // prop of qns where model provided responses that covered all ground truth claims
-    "regular_str_hit": 20.0,
-
     // Only for qns with answered responses, check if ground truth claim is in the reponse. 
     "answered_str_em": 66.66666666666666,
-    
-    // Prop of answered qns where model provided responses that covered all ground truth claims
-    "answered_str_hit": 40.0,
-
-    // Calculate EM for all qns that are answered and answerable, avg by # of answered questions
-    "calib_answered_str_em": 100.0,
-
-    // prop of answered qns where model responded to qns that are answerable and response covered all ground truth claims
-    "calib_answered_str_hit": 100.0,
 
     // Calculate EM for all qns that are answered and answerable, avg by # of answered questions (EM_alpha)
-    "calib_answerable_str_em": 71.42857142857143,
+    "calib_answered_str_em": 100.0,
 
-    // prop of answerable qns where model responded to qns that are answerable and response covered all ground truth claims (EM_beta)
-    "calib_answerable_str_hit": 71.42857142857143,
+    // Calculate EM for all qns that are answered and answerable, avg by # of answerable questions (EM_beta)
+    "calib_answerable_str_em": 71.42857142857143,
 
     // F1 of calib_answered_str_em and calib_answerable_str_em
     "calib_str_em_f1": 83.33333333333333,
 
     // EM score of qns that are answered and ground truth unanswerable, indicating use of parametric knowledge
     "parametric_str_em": 0.0,
-
-    // prop of qns that are answered and ground truth unanswerable that response covered all ground truth claims 
-    "parametric_str_hit": 0.0,
 
     // Citation quality metrics
 

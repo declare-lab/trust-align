@@ -1,3 +1,2 @@
 model: Qwen/Qwen2.5-3B-Instruct
 max_length: 8192
-vllm: True

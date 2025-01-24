@@ -1,3 +1,7 @@
+"""
+Adapted with gratitude from https://github.com/princeton-nlp/ALCE/blob/main/retrieval.py
+"""
+
 import csv
 import gc
 import os

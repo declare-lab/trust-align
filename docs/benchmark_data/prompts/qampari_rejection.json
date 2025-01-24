@@ -1,0 +1,219 @@
+{
+    "instruction": "Instruction: Provide a list of accurate answers for the given question using only the provided search results (some of which might be irrelevant) and cite them properly. Always cite one and only one document for each answer. Separate answers by commas. For questions that have more than 5 answers, write at least 5 answers. If none of the provided documents contain the answer, only respond with \"I apologize, but I couldn't find an answer to your question in the search results.\".",
+    "demo_sep": "\n\n\n",
+    "demo_prompt": "{INST}\n\nQuestion: {Q}\n\n{D}\nAnswer: {A}",
+    "doc_prompt": "Document [{ID}](Title: {T}): {P}\n",
+    "positive_demos": [
+        {
+            "question": "Which books were written by Nevil Shute?",
+            "answer": "Marazan [1], Stephen Morris [1], Beyond the Black Stump [2], Lonely Road [2], The Chequer Board [2], In the Wet [2], Trustee from the Toolroom [2], Round the Bend [2], No Highway [3], Ruined City [3], On the Beach [3].",
+            "docs": [
+                {
+                    "title": "Nevil Shute",
+                    "text": "early stages. My congratulations.\" His celebrity as a writer caused the Ministry of Information to send him to the Normandy Landings on 6 June 1944 and later to Burma as a correspondent. He finished the war with the rank of lieutenant commander in the Royal Navy Volunteer Reserves (RNVR). Shute's first novel, \"Stephen Morris\", was written in 1923, but not published until 1961. His first published novel was \"Marazan\", which came out in 1926. After that he averaged one novel every two years through the 1950s, with the exception of a six-year hiatus while he was establishing his own aircraft"
+                },
+                {
+                    "title": "Nevil Shute",
+                    "text": "theme is the bridging of social barriers such as class (\"Lonely Road\" and \"Landfall\"), race (\"The Chequer Board\"), or religion (\"Round the Bend\"). The Australian novels are individual hymns to that country, with subtle disparagement of the mores of the United States (\"Beyond the Black Stump\") and overt antipathy towards the post-World War II socialist government of Shute's native Britain (\"The Far Country\" and \"In the Wet\"). Shute's heroes tended to be like himself: middle class solicitors, doctors, accountants, bank managers, engineers, generally university graduates. However (as in \"Trustee from the Toolroom\"), Shute valued the honest artisans and their social"
+                },
+                {
+                    "title": "Nevil Shute",
+                    "text": "construction company, Airspeed Ltd. His popularity grew slowly with each novel, but he became much more famous after the publication of \"On the Beach\" in 1957. Shute's novels are written in a simple, highly readable style, with clearly delineated plot lines. Where there is a romantic element, sex is referred to only obliquely. Many of the stories are introduced by a narrator who is not a character in the story. The most common theme in Shute's novels is the dignity of work, spanning all classes, whether an Eastern European bar \"hostess\" (\"Ruined City\") or brilliant boffin (\"No Highway\"). Another recurrent"
+                },
+                {
+                    "title": "The Chequer Board",
+                    "text": "the Burmese people\", both of which are central to the book's story. Shute was concerned that sales of the book in the United States would be negatively impacted by the book's open-minded handling of racial issues; as it turned out, sales soared. Shute and his wife traveled the U.S. on Greyhound buses to \"\"get in touch with the man on the street,\"\" finding the experience refreshing. Afterwards he wrote \"\"Sincerity is the first attribute for making money in the business of writing novels.\"\" The Chequer Board The Chequer Board is a novel by Nevil Shute, first published in the United"
+                },
+                {
+                    "title": "In the Wet",
+                    "text": "had used the idea of multiple votes for merit in his short story \"The Curious Republic of Gondour\". In the Wet In The Wet is a novel by Nevil Shute that was first published in the United Kingdom in 1953. It contains many of the typical elements of a hearty and adventurous Shute yarn such as flying, the future, mystic states, and ordinary people doing extraordinary things. The story is opened by its initial narrator \u2013 an Anglican priest in the Bush Brotherhood named Roger Hargreaves \u2013 who describes his ordinary circumstances in a large parish of the Australian outback"
+                }
+            ]
+        },
+        {
+            "question": "Which film has Gong Li as a member of its cast?",
+            "answer": "The Story of Qiu Ju [1], Farewell My Concubine [2], Flirting Scholar [2], The Monkey King 2 [3], Mulan [3], Saturday Fiction [3], Coming Home [3].",
+            "docs": [
+                {
+                    "title": "Gong Li",
+                    "text": "Gong Li Gong Li (born 31 December 1965) is a Chinese-born Singaporean film actress. She achieved international prominence through her close collaborations with Chinese director Zhang Yimou and won the Volpi Cup for Best Actress at Venice for her performance in his 1992 film \"The Story of Qiu Ju\". She has been credited with helping to bring Chinese cinema to prominence in Europe and the United States. In 2006, she was voted the most beautiful woman in China. Gong has won numerous accolades for her work as an actress; she won the New York Film Critics Circle Award for Best"
+                },
+                {
+                    "title": "Gong Li",
+                    "text": "making her realize that she has assisted the dark cynical system. In 1993, she received a New York Film Critics Circle award for her role in \"Farewell My Concubine\" (1993). Directed by Chen Kaige, the film was her first major role with a director other than Zhang Yimou. In the same year, she was awarded with the Berlinale Camera at the 43rd Berlin International Film Festival. \"Premiere\" magazine ranked her performance in \"Farewell My Concubine\" as the 89th greatest performance of all time. She also worked with renowned director Stephen Chow in comedy films \"\" (1991) and \"Flirting Scholar\" (1993)."
+                },
+                {
+                    "title": "Gong Li",
+                    "text": "International Film Festival. Later that same year, she reunited with Zhang Yimou for the film \"Coming Home\", which is set during the throes of the Cultural Revolution; this film was their first collaboration since 2006. In 2016, Gong took on her first action role in \"The Monkey King 2\", playing the White Bone Demon. In 2018, Gong was cast in Lou Ye's period drama \"Saturday Fiction\", where she plays an actress who is working undercover gathering intelligence for the Allies. That year, she was also cast in the live-action adaptation of the 1998 Disney animated film \"Mulan\", as an unspecified"
+                },
+                {
+                    "title": "Zhang Yimou",
+                    "text": "in Zhang's earlier films. \"Raise the Red Lantern\" was nominated in the Best Foreign Language Film category at the 1992 Academy Awards, becoming the second Chinese film to earn this distinction (after Zhang's \"Ju Dou\"). It eventually lost out to Gabriele Salvatores's \"Mediterraneo\". Zhang's next directorial work, \"The Story of Qiu Ju\", in 1992, once again starring Gong Li in the lead role. The film, which tells the tale of a peasant woman seeking justice for her husband after he was beaten by a village official, was a hit at film festivals and won the Golden Lion award at the"
+                },
+                {
+                    "title": "Gong Li",
+                    "text": "Gong Li Gong Li (born 31 December 1965) is a Chinese-born Singaporean film actress. She achieved international prominence through her close collaborations with Chinese director Zhang Yimou and won the Volpi Cup for Best Actress at Venice for her performance in his 1992 film \"The Story of Qiu Ju\". She has been credited with helping to bring Chinese cinema to prominence in Europe and the United States. In 2006, she was voted the most beautiful woman in China. Gong has won numerous accolades for her work as an actress; she won the New York Film Critics Circle Award for Best"
+                }
+            ]
+        }
+    ],
+    "reject_demos": [
+        {
+            "question": "The Ronettes performed which work?",
+            "answer": "I apologize, but I couldn't find an answer to your question in the search results.",
+            "docs": [
+                {
+                    "id": "1446707",
+                    "title": "The Ronettes",
+                    "text": "1950s, while Ronnie became fascinated with Frankie Lymon and the Teenagers. In 1957, Ronnie formed the group which would later become known as the Ronettes. Composed of Ronnie, her sister Estelle, and their cousins Nedra, Diane, and Elaine, the five girls learned how to perfect their harmonies first at their grandmother's house, and they became proficient in songs such as \u201cGoodnight Sweetheart\u201d and \u201cRed Red Robin\u201d. Emulating Frankie Lymon and the Teenagers, the girls added their male cousin Ira to the group and signed up for a Wednesday night amateur show at the Apollo Theatre run by a friend of",
+                    "score": 0.76708984375,
+                    "answers_found": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                },
+                {
+                    "id": "1446747",
+                    "title": "The Ronettes",
+                    "text": "place behind the microphone. Studio albums The Ronettes The Ronettes () were an American girl group from New York City. One of the most popular groups from the 1960s, they placed nine songs on the \"Billboard\" Hot 100, five of which became Top 40 hits. The trio from Spanish Harlem, New York, consisted of lead singer Veronica Bennett (later known as Ronnie Spector), her older sister Estelle Bennett, and their cousin Nedra Talley.",
+                    "score": 0.7529296875,
+                    "answers_found": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                },
+                {
+                    "id": "1446728",
+                    "title": "The Ronettes",
+                    "text": "to America on February 7, 1964, but Spector denied them the opportunity to do so. Instead, throughout 1964, the group appeared on numerous television shows such as \"Shindig!\", \"American Bandstand\", \"Hullabaloo\", and British TV show \"Ready, Steady, Go!\" As the popularity of other groups such as The Crystals, The Marvelettes, and The Angels began to wane, that of the Ronettes continued to grow. She later recalled that the writers \u2013 Phil Spector, Barry Mann, and Cynthia Weil",
+                    "score": 0.7451171875,
+                    "answers_found": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                },
+                {
+                    "id": "1446716",
+                    "title": "The Ronettes",
+                    "text": "officially signed to Spector's Philles Records. The first song the Ronettes rehearsed and recorded with Phil Spector was written by Spector, Jeff Barry, and Ellie Greenwich called \"Why Don't They Let Us Fall in Love\". They brought the women out to California to make the record, but, once it was completed, Spector declined to release it. They recorded more songs for Spector, including covers of \"The Twist\", \"The Wah Watusi\" (lead vocals by Nedra), \"Mashed Potato Time\", and \"Hot Pastrami\". These four songs were released, but were credited to The Crystals on their 1963 Philles LP \"The Crystals Sing Their",
+                    "score": 0.73779296875,
+                    "answers_found": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                },
+                {
+                    "id": "1446705",
+                    "title": "The Ronettes",
+                    "text": "number 96. \"Rolling Stone\" ranked it number 422 on its list of The 500 Greatest Albums of All Time. The group was inducted into the Vocal Group Hall of Fame in 2004. The Ronettes were the only girl group to tour with the Beatles. The Ronettes began as a family act where the girls grew up in Washington Heights, Manhattan. According to Nedra Talley, they started singing during childhood visits to their grandmother's home. \"Estelle and Veronica are sisters,\" she said in a later interview. \"I'm their cousin. Our mothers are sisters. We came out of a family that, on",
+                    "score": 0.7373046875,
+                    "answers_found": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                }
+            ]
+        },
+        {
+            "question": "Which film has Glenn Ford as a member of its cast and was directed by Henry Levin?",
+            "answer": "I apologize, but I couldn't find an answer to your question in the search results.",
+            "docs": [
+                {
+                    "id": "3103244",
+                    "title": "Glenn Ford",
+                    "text": "David Lean. Glenn Ford missed out on \"From Here to Eternity\" \u2013 as did Rita Hayworth \u2013 when production was stalled by Columbia studio head, Harry Cohn. He also made the mistake, which he bitterly regretted later, of turning down the lead in the brilliant comedy \"Born Yesterday\" (also planned with Rita Hayworth) which Holden then snatched up. He instead continued to bring in solid performances in thrillers, dramas, and action films such as \"A Stolen Life\" with Bette Davis, memorable film noir: \"The Big Heat\" directed by Hitler refugee Fritz Lang, co-starring Gloria Grahame, and reteamed with the same",
+                    "score": 0.7529296875,
+                    "answers_found": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                },
+                {
+                    "id": "8686180",
+                    "title": "Henry Levin (film director)",
+                    "text": "the television movie \"Scout's Honor\" where he died on the last day of production. Despite having been a stage actor, his only screen acting credit was in an episode of the 1974 television series \"Planet of the Apes\". Henry Levin (film director) Henry Levin (5 June 1909 \u2013 1 May 1980) began as a stage actor and director but was most notable as an American film director of over fifty feature films. His best known credits were \"Jolson Sings Again\" (1949), \"Journey to the Centre of the Earth\" (1959) and \"Where the Boys Are\" (1960). Levin began as an actor.",
+                    "score": 0.75244140625,
+                    "answers_found": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                },
+                {
+                    "id": "6096405",
+                    "title": "Harold Hecht",
+                    "text": "Evan Hunter's novel, \"A Matter of Conviction\", concerning members of a Harlem street gang tried for murder (later released as \"The Young Savages\"). Glenn Ford had already starred in another Hunter adaptation, \"Blackboard Jungle\"; the film was nominated for four Oscars. Hecht was hoping that the new combo would be as successful and hired more top Hollywood personnel to work on \"The Young Savages\"; John Gay to write the screenplay and Robert Rossen to direct. But by the end of the year, Glenn Ford had left the project and in early 1960 Rossen dropped out to focus on his future",
+                    "score": 0.7451171875,
+                    "answers_found": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                },
+                {
+                    "id": "3103229",
+                    "title": "Glenn Ford",
+                    "text": "name came from his father's hometown of Glenford, Alberta. His first major movie part was in the 1939 film, \"Heaven with a Barbed Wire Fence\". Top Hollywood director John Cromwell was impressed enough with his work to borrow him from Columbia for the independently produced drama, \"So Ends Our Night\" (1941), where Ford delivered a poignant portrayal of a 19-year-old German exile on the run in Nazi-occupied Europe. Working with Academy Award-winning Fredric March and wooing (onscreen) 30-year-old Margaret Sullavan, recently nominated for an Oscar, Ford's shy, ardent young refugee riveted attention even in such stellar company. \"Glenn Ford, a",
+                    "score": 0.74365234375,
+                    "answers_found": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                },
+                {
+                    "id": "8686175",
+                    "title": "Henry Levin (film director)",
+                    "text": "Lady\" (1952) a biopic of Andrew Jackson with Charlton Heston; \"The Farmer Takes a Wife\" (1953) with Betty Grable; \"Mister Scoutmaster\" (1953) with Clifton Webb; \"Three Young Texans\" (1954), a Western with Jeffrey Hunter; and \"The Gambler from Natchez\" (1954) a Western with Dale Robertson. He did some uncredited work on \"Way of a Gaucho\" (1952). Levin went to England to make \"The Dark Avenger\" (1954) with Errol Flynn, a co production between Fox and Allied Artists. In 1956 he was announced for \"Love Story\" with Barbara Stanwyck and producer Paul Goldstein but the film was not made. For Allied",
+                    "score": 0.74169921875,
+                    "answers_found": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                }
+            ]
+        }
+    ]
+}

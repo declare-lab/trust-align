@@ -1,0 +1,184 @@
+{
+    "instruction": "Instruction: Write an accurate, engaging, and concise answer for the given question using only the provided search results (some of which might be irrelevant) and cite them properly. Use an unbiased and journalistic tone. Always cite for any factual claim. When citing several search results, use [1][2][3]. Cite at least one document and at most three documents in each sentence. If multiple documents support the sentence, only cite a minimum sufficient subset of the documents. If none of the provided documents contain the answer, only respond with \"I apologize, but I couldn't find an answer to your question in the search results.\".",
+    "demo_sep": "\n\n\n",
+    "demo_prompt": "{INST}\n\nQuestion: {Q}\n\n{D}\nAnswer: {A}",
+    "doc_prompt": "Document [{ID}](Title: {T}): {P}\n",
+    "positive_demos": [
+        {
+            "question": "Which is the most rainy place on earth?",
+            "answer": "Several places on Earth claim to be the most rainy, such as Lloró, Colombia, which reported an average annual rainfall of 12,717 mm between 1952 and 1989, and López de Micay, Colombia, which reported an annual 12,892 mm between 1960 and 2012 [3]. However, the official record is held by Mawsynram, India with an average annual rainfall of 11,872 mm [3], although nearby town Sohra, India, also known as Cherrapunji, holds the record for most rain in a calendar month for July 1861 and most rain in a year from August 1860 to July 1861 [1].",
+            "docs": [
+                {
+                    "title": "Cherrapunji",
+                    "text": "Cherrapunji Cherrapunji (; with the native name Sohra being more commonly used, and can also be spelled Cherrapunjee or Cherrapunji) is a subdivisional town in the East Khasi Hills district in the Indian state of Meghalaya. It is the traditional capital of aNongkhlaw \"hima\" (Khasi tribal chieftainship constituting a petty state), both known as Sohra or Churra. Cherrapunji has often been credited as being the wettest place on Earth, but for now nearby Mawsynram currently holds that distinction. Cherrapunji still holds the all-time record for the most rainfall in a calendar month for July 1861 and most rain in a year from August 1860 to July 1861, however: it received in"
+                },
+                {
+                    "title": "Cherrapunji",
+                    "text": "Radio relay station known as Akashvani Cherrapunji. It broadcasts on FM frequencies. Cherrapunji Cherrapunji (; with the native name Sohra being more commonly used, and can also be spelled Cherrapunjee or Cherrapunji) is a subdivisional town in the East Khasi Hills district in the Indian state of Meghalaya. It is the traditional capital of aNongkhlaw \"hima\" (Khasi tribal chieftainship constituting a petty state), both known as Sohra or Churra. Cherrapunji has often been credited as being the wettest place on Earth, but for now nearby Mawsynram currently holds that distinction. Cherrapunji still holds the all-time record for the most rainfall"
+                },
+                {
+                    "title": "Mawsynram",
+                    "text": "Mawsynram Mawsynram () is a village in the East Khasi Hills district of Meghalaya state in north-eastern India, 65 kilometres from Shillong. Mawsynram receives one of the highest rainfalls in India. It is reportedly the wettest place on Earth, with an average annual rainfall of 11,872 mm, but that claim is disputed by Lloró, Colombia, which reported an average yearly rainfall of 12,717 mm between 1952 and 1989 and López de Micay, also in Colombia, which reported an annual 12,892 mm per year between 1960 and 2012. According to the \"Guinness Book of World Records\", Mawsynram received of rainfall in 1985. Mawsynram is located at 25° 18′"
+                },
+                {
+                    "title": "Earth rainfall climatology",
+                    "text": "Pacific Northwest, and the Sierra Nevada range are the wetter portions of the nation, with average rainfall exceeding per year. The drier areas are the Desert Southwest, Great Basin, valleys of northeast Arizona, eastern Utah, central Wyoming, eastern Oregon and Washington and the northeast of the Olympic Peninsula. The Big Bog on the island of Maui receives, on average, every year, making it the wettest location in the US, and all of Oceania. The annual average rainfall maxima across the continent lie across the northwest from northwest Brazil into northern Peru, Colombia, and Ecuador, then along the Atlantic coast of"
+                },
+                {
+                    "title": "Going to Extremes",
+                    "text": "in the world. Oymyakon in Siberia, where the average winter temperature is −47 °F (− 44 °C). Arica in Chile, where there had been fourteen consecutive years without rain. Fog is the only local source of water. Mawsynram in India, where average annual rainfall is 14 meters, falling within a four-month period in the monsoon season. The rainfall is approximately equal to that of its neighbor Cherrapunji. Dallol in Ethiopia, known as the 'Hell-hole of creation' where the temperature averages 94 °F (34 °C) over the year. In his second series, Middleton visited places without permanent towns, locations where \"survival\""
+                }
+            ]
+        },
+        {
+            "question": "When did the us break away from england?",
+            "answer": "The United States took the first step towards gaining independence from Great Britain when it declared independence from Great Britain on July 2, 1776 (although the event is now commemorated on July 4, 1776, the date when the Declaration of Independence was officially adopted by Congress) [2]. The Treaty of Paris was later signed on September 3, 1783, formally separating the United States from the British Empire [3].",
+            "docs": [
+                {
+                    "title": "United States withdrawal from Saudi Arabia",
+                    "text": "United States withdrawal from Saudi Arabia Beginning during Operation Desert Shield in August 1990, while preparing for the Gulf War, the United States sent a large troop contingent to Saudi Arabia. After the war, remnant troops, primarily U.S. Air Force personnel, augmented by a smaller number of coordinating and training personnel from the U.S. Navy, U.S. Army and U.S. Marine Corps remained in Saudi Arabia under the aegis of Joint Task Force Southwest Asia (JTF-SWA), as part of Operation Southern Watch (OSW). The United Kingdom and France also maintained a small contingent of Royal Air Force and French Air Force"
+                },
+                {
+                    "title": "Decolonization of the Americas",
+                    "text": "and France has fully \"integrated\" most of its former colonies as fully constituent \"departments\" of France. The United States of America declared independence from Great Britain on July 2, 1776 (although the event is now commemorated on July 4, the date when the Declaration of Independence was officially adopted by Congress), in so doing becoming the first independent, foreign-recognized nation in the Americas and the first European colonial entity to break from its mother country. Britain formally acknowledged American independence in 1783 after its defeat in the American Revolutionary War. Although initially occupying only the land east of the Mississippi"
+                },
+                {
+                    "title": "American Revolution",
+                    "text": "second British army at Yorktown in the fall of 1781, effectively ending the war. The Treaty of Paris was signed September 3, 1783, formally ending the conflict and confirming the new nation's complete separation from the British Empire. The United States took possession of nearly all the territory east of the Mississippi River and south of the Great Lakes, with the British retaining control of Canada and Spain taking Florida. Among the significant results of the revolution was the creation of the United States Constitution, establishing a relatively strong federal national government that included an executive, a national judiciary, and"
+                },
+                {
+                    "title": "Decolonization",
+                    "text": "accelerate decolonialization and bring an end to the colonial empires of its Western allies, most importantly during the 1956 Suez Crisis, but American military bases were established around the world and direct and indirect interventions continued in Korea, Indochina, Latin America (\"inter alia\", the 1965 occupation of the Dominican Republic), Africa, and the Middle East to oppose Communist invasions and insurgencies. Since the dissolution of the Soviet Union, the United States has been far less active in the Americas, but invaded Afghanistan and Iraq following the September 11 attacks in 2001, establishing army and air bases in Central Asia. Before"
+                },
+                {
+                    "title": "Decolonization",
+                    "text": "the responsibility of the United Kingdom (with a copy of the new constitution annexed), and finally, if approved, issuance of an Order of Council fixing the exact date of independence. After World War I, several former German and Ottoman territories in the Middle East, Africa, and the Pacific were governed by the UK as League of Nations mandates. Some were administered directly by the UK, and others by British dominions – Nauru and the Territory of New Guinea by Australia, South West Africa by the Union of South Africa, and Western Samoa by New Zealand. Egypt became independent in 1922,"
+                }
+            ]
+        }
+    ],
+    "reject_demos": [
+        {
+            "question": "Who set the record for longest field goal?",
+            "answer": "I apologize, but I couldn't find an answer to your question in the search results.",
+            "docs": [
+                {
+                    "id": "5758609",
+                    "title": "Sebastian Janikowski",
+                    "text": "have broken the all-time NFL field goal record of 63 yards. However, it bounced off the right upright and came back out. On September 28, 2008, Janikowski unsuccessfully attempted a 76-yard field goal against the San Diego Chargers into the heavy wind right before halftime. This is presumed to be the longest attempt in NFL history; though the league keeps no such records on attempts, the longest known attempts previous to this were 74 yard attempts by Mark Moseley and Joe Danelo in 1979. On October 19, 2008, Janikowski broke his own Raiders team record, making a 57-yard field goal",
+                    "score": 0.78466796875,
+                    "answers_found": [
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                },
+                {
+                    "id": "12183799",
+                    "title": "Dirk Borgognone",
+                    "text": "Dirk Borgognone Dirk Ronald Borgognone (born January 9, 1968) is a former National Football League placekicker who currently holds the record for the longest field goal ever kicked in the history of high school football, 68 yards. Borgognone attended Reno High School, initially playing as a soccer player. He soon switched to football and was trained in a \"straight-on\" kicking style. On September 27, 1985, he kicked the longest field goal in high school football history, during a Reno High School game at Sparks High School. The kick measured 68 yards and was longer than any that had ever been",
+                    "score": 0.7822265625,
+                    "answers_found": [
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                },
+                {
+                    "id": "6048593",
+                    "title": "Russell Erxleben",
+                    "text": "against the University of Colorado. Despite early troubles in the game, including a missed field goal and a blocked extra point, Erxleben kicked a field goal late in the game, breaking the tie and securing the win for Texas. In 1977, in a game against Rice University, he set the record for the longest field goal in NCAA history with a 67-yard kick. UT head coach Fred Akers said of the kick, \"It was like a gunshot. We couldn't believe a ball was going that far. It had another eight yards on it.\" Erxleben kicked two other field goals over",
+                    "score": 0.7705078125,
+                    "answers_found": [
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                },
+                {
+                    "id": "9303115",
+                    "title": "Field goal",
+                    "text": "to Dempsey's 1970 kick, the longest field goal in NFL history was 56 yards, by Bert Rechichar of the Baltimore Colts A 55-yard field goal, achieved by a drop kick, was recorded by Paddy Driscoll in , and stood as the unofficial record until that point; some sources indicate a 54-yarder by Glenn Presnell in as the due to the inability to precisely verify Driscoll's kick. In a pre-season NFL game between the Denver Broncos and the Seattle Seahawks on August 29, 2002, Ola Kimrin kicked a 65-yard field goal. However, because pre-season games are not counted toward official records,",
+                    "score": 0.76513671875,
+                    "answers_found": [
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                },
+                {
+                    "id": "4853018",
+                    "title": "Steve Christie",
+                    "text": "Canton. He then went on to kick five field goals in the Bills 29-10 win over the Miami Dolphins in the AFC championship game, helping Buffalo get to their third consecutive Super Bowl. In 1993, Christie set a Bills record by kicking a 59-yard field goal in a regular season game. It was only four yards short of the all-time NFL record. In Super Bowl XXVIII, Christie set a Super Bowl record by kicking a 54-yard field goal. It is currently the longest field goal ever made in Super Bowl History. In the 2000 season, Christie was an instrumental part",
+                    "score": 0.75341796875,
+                    "answers_found": [
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                }
+            ]
+        },
+        {
+            "question": "Who played galen in planet of the apes?",
+            "answer": "I apologize, but I couldn't find an answer to your question in the search results.",
+            "docs": [
+                {
+                    "id": "12677620",
+                    "title": "Planet of the Apes (2001 film)",
+                    "text": "be the Lincoln Memorial, only to find that it is now a monument to General Thade. A swarm of police officers, firefighters, and news reporters descend on Leo, all of whom are apes. Small roles include David Warner (Senator Sandar), Lisa Marie (Nova), Erick Avari (Tival), Luke Eberl (Birn), Evan Parke (Gunnar), Glenn Shadix (Senator Nado), Freda Foh Shen (Bon), Chris Ellis (Lt. Gen. Karl Vasich) and Anne Ramsay (Lt. Col. Grace Alexander). There are also cameo appearances by Charlton Heston (uncredited) as Zaius, Thade's father, and Linda Harrison (the woman in the cart). Both participated in two original films",
+                    "score": 0.7529296875,
+                    "answers_found": [
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                },
+                {
+                    "id": "3943319",
+                    "title": "Severn Darden",
+                    "text": "Severn Darden Severn Teakle Darden Jr. (November 9, 1929 \u2013 May 27, 1995) was an American comedian and actor, and an original member of The Second City Chicago-based comedy troupe as well as its predecessor, the Compass Players. He is perhaps best known from his film appearances for playing the human leader Kolp in the fourth and fifth \"Planet of the Apes\" films. Born in New Orleans, Louisiana, he attended the University of Chicago. Darden\u2019s offbeat and intellectual sense of humor, appropriate for someone who attended the University of Chicago and in fact a major element in the style of",
+                    "score": 0.74267578125,
+                    "answers_found": [
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                },
+                {
+                    "id": "13813715",
+                    "title": "Planet of the Apes",
+                    "text": "film stars Mark Wahlberg as astronaut Leo Davidson, who accidentally travels through a wormhole to a distant planet where talking apes enslave humans. He leads a human revolt and upends ape civilization by discovering that the apes evolved from the normal earth primates who had accompanied his mission, and arrived years before. Helena Bonham Carter played chimpanzee Ari, while Tim Roth played the human-hating chimpanzee General Thade. The film received mixed reviews; most critics believed it failed to compare to the original. Much of the negative commentary focused on the confusing plot and twist ending, though many reviewers praised the",
+                    "score": 0.74169921875,
+                    "answers_found": [
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                },
+                {
+                    "id": "3386349",
+                    "title": "Maurice Evans (actor)",
+                    "text": "Maurice Evans (actor) Maurice Herbert Evans (3 June 1901 \u2013 12 March 1989) was a British actor, noted for his interpretations of Shakespearean characters. His best-known screen roles are Dr. Zaius in the 1968 film \"Planet of the Apes\" and as Samantha Stephens's father, Maurice, on \"Bewitched\". Evans was born at 28 Icen Way (where there is now a memorial plaque, unveiled in 2013 by Tegen Evans, his great-great niece) in Dorchester, Dorset. He was the son of Laura (Turner) and Alfred Herbert Evans, a Welsh dispensing chemist and keen amateur actor who made adaptations of novels by Thomas Hardy",
+                    "score": 0.734375,
+                    "answers_found": [
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                },
+                {
+                    "id": "823444",
+                    "title": "Ricardo Montalba\u0301n",
+                    "text": "was played by Andy Garc\u00eda. Ricardo Montalb\u00e1n Ricardo Gonzalo Pedro Montalb\u00e1n y Merino, (; ; November 25, 1920 \u2013 January 14, 2009) was a Mexican actor. His career spanned seven decades, during which he became known for many different performances in a variety of genres, from crime and drama to musicals and comedy. Among his notable roles was Armando in the \"Planet of the Apes\" film series from the early 1970s, where he starred in \"Escape from the Planet of the Apes\" (1971) and \"Conquest of the Planet of the Apes\" (1972). Ricardo Montalb\u00e1n played Mr. Roarke on the television",
+                    "score": 0.7314453125,
+                    "answers_found": [
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                }
+            ]
+        }
+    ]
+}
