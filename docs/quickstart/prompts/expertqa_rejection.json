@@ -1,0 +1,194 @@
+{
+    "instruction": "Instruction: Write an accurate, engaging, and concise answer for the given question using only the provided search results (some of which might be irrelevant) and cite them properly. Use an unbiased and journalistic tone. Always cite for any factual claim. When citing several search results, use [1][2][3]. Cite at least one document and at most three documents in each sentence. If multiple documents support the sentence, only cite a minimum sufficient subset of the documents. If none of the provided documents contain the answer, only respond with \"I apologize, but I couldn't find an answer to your question in the search results.\".",
+    "demo_sep": "\n\n\n",
+    "demo_prompt": "{INST}\n\nQuestion: {Q}\n\n{D}\nAnswer: {A}",
+    "doc_prompt": "Document [{ID}](Title: {T}): {P}\n",
+    "positive_demos": [
+        {
+            "question": "Why did New York City try to ban food donations to the poor?",
+            "answer": "New York City, under Mayor Michael Bloomberg's administration, banned citizens from donating food directly to homeless shelters because the city could not assess the salt, fat, and fiber content [1][2][3]. Bloomberg's administration was heavily criticized for losing their common sense by becoming too focused on what people eat [2].",
+            "docs": [
+                {
+                    "title": "The Future Of America",
+                    "text": "believe that they are \u201chelping\u201d the homeless by passing such laws. In New York City, Mayor Bloomberg has banned citizens from donating food directly to homeless shelters and he is actually convinced that it was the right thing to do for the homeless\u2026 Mayor Michael Bloomberg\u2019s food police have struck again! Outlawed are food donations to homeless shelters because the city can\u2019t assess their salt, fat and fiber content, reports CBS 2\u2019s Marcia Kramer. Glenn Richter arrived at a West Side synagogue on Monday to collect surplus bagels \u2014 fresh nutritious bagels \u2014 to donate to the poor."
+                },
+                {
+                    "title": "mayor bloomberg",
+                    "text": "Amuck: Bloomberg Bans Food Donations in New York City Food Might Be Salty or Too High in Calories, City Explains Washington, D.C. \u2013 New York Mayor Michael Bloomberg\u2019s administration is now banning all food being offered to the city\u2019s homeless shelters. New York City\u2019s bureaucrats have become so singularly focused on what people eat, says the National Center for Public Policy Research, that they\u2019ve lost their common sense. \u201cSo much for serving the homeless: The Bloomberg administration is now taking the term \u2018food police\u2019 to new depths, blocking food donations to all government-run facilities that serve the"
+                },
+                {
+                    "title": "New York City bans food donations - WND",
+                    "text": "New York City bans food donations - WND Front Page Health U.S. New York City bans food donations Inability to control 'nutritional content' cited as reason New York City homeless shelters have Mayor Michael Bloomberg to thank for a halt in food donations, for which hungry families are waiting, according to one public policy advocate. \"The Bloomberg administration is now taking the term 'food police' to new depths, blocking food donations to all government-run facilities that serve the city's homeless,\" says Jeff Stier, a National Center for Public Policy Research senior fellow. Currently, no food can be given to government-run, New York City facilities, despite hungry crowds perfectly"
+                },
+                {
+                    "title": "New York City bans food donations - WND",
+                    "text": "New York City bans food donations - WND Services didn't return WND calls. Stier told WND that he specifically was told by Diamond that the policy was tied to the nutritional guidelines set by the mayor. \"They can say that this ban on donations is a long-standing policy, but they can\u2019t document it,\" Stier told WND. \"I've also been told that there are numerous food shelves that have been accepting food donations, not just one.\" Stier is a member of a New York Synagogue that has donated food for over a decade. He is outraged that the DHS' response to his demand to know why the practice can"
+                },
+                {
+                    "title": "New York City bans food donations - WND",
+                    "text": "New York City bans food donations - WND ban on donated food. In fact, it thrives because of food donations. New York City Rescue Mission has been providing food, clothing, shelter and spiritual hope for needy New Yorkers since 1872. \"We feed over 500 people a day, all through donations,\" said James Varnhagen, NYCRM director. \"Boxed food, canned food, prepared food, we take any food,\" he told WND. \"We couldn't survive without donations,\" he said."
+                }
+            ]
+        },
+        {
+            "question": "What's the difference between Shia vs. Sunni Islam?",
+            "answer": "The main difference between Shia and Sunni Muslim is related to ideological heritage and issues of leadership [1]. This difference is first formed after the death of the Prophet Muhammad in 632 A.D. [1][2]. The ideological practice of the Sunni branch strictly follows Prophet Muhammad and his teachings, while the Shia branch follows Prophet Muhammad's son-in-law Ali [2]. Nowadays, Sunni and Shia are the major branches of Islam [3].",
+            "docs": [
+                {
+                    "title": "The Sunni vs Shia Divide - Explained - Globaloi",
+                    "text": "centuries-long strained relationship between Sunnis and Shias. As a scholar of Islam and a public educator, I often field questions about Sunnis, Shias and the sects of Islam. What exactly is the Shia-Sunni divide? And what is its history? History of divide Both Sunnis and Shias \u2013 drawing their faith and practice from the Qur\u2019an and the life of the Prophet Muhammad \u2013 agree on most of the fundamentals of Islam. The differences are related more to historical events, ideological heritage and issues of leadership. The first and central difference emerged after the death of Prophet Muhammad in A.D. 632."
+                },
+                {
+                    "title": "What\u2019s the difference between Sunni and Shia Islam? \u2013 Macrosnaps",
+                    "text": "What\u2019s the difference between Sunni and Shia Islam? Sunni and Shia identities (the 2 main branches of Islam) first formed around a dispute over leadership succession after the death of the Prophet Muhammad in 632 A.D. Sunni is the larger branch (estimated 85-90% of total world Muslim population) and it's adherents are referred to as \"people of the tradition of Muhammad\", while Shia are \"followers\" of Muhammad's son-in-law and cousin Ali. Sunnis rely heavily on the practice of the Prophet Muhammad and his teachings, the Shia view their ayatollahs as reflections of God on earth. What challenges does the anti-IS"
+                },
+                {
+                    "title": "Difference between Sunni and Shia Muslims | Sunni vs Shia Muslims",
+                    "text": "of Muhammad, the last prophet of God. A follower of Islam is known as a Muslim. Many Muslims believe that their sole purpose is to worship and serve God, for which they have established five pillars of Islam that guides a Muslim on almost every aspect of life and society. Due to differences, Muslims have been divided into two primary sects: The Sunnis and the Shias. These two sects have many similarities and both consider themselves are Muslims, following the will of God. However, they are also different from each other in certain aspects. Both the Sunnis and the Shias,"
+                },
+                {
+                    "title": "What is the difference between Shia and Sunni Islam? - Islam Stack Exchange",
+                    "text": "What is the difference between Shia and Sunni Islam? - Islam Stack Exchange between Mutah marriage and Misyar marriage? What theological and historical factors distinguish Ibadi Islam from either Shia or Sunni schools? What are the principle/fundamental differences between Sunni and Shia? Nikah between a Sunni girl and Shia boy What is the difference between \u201cMubtalat-of-Wudu\u201d of Shia and Sunni? How can the Hadith be reliable when Sunnis and Shia follow different points of reference? Rejection of Mutawatir Hadith in Sunni Islam and Shia Islam"
+                },
+                {
+                    "title": "What is the difference between Sunni and Shia Islam? | Patrick Syder Travel",
+                    "text": "What is the difference between Sunni and Shia Islam? | Patrick Syder Travel What is the difference between Sunni and Shia Islam? This Channel 4 link answers some of the key questions about the difference between Sunni and Shia Islam and alarmingly, the politics on what is happening and why, in Syria\u2026\u2026. http://www.channel4.com/news/sunni-shia-islam-muslim-syria-middle-east-key-questions \u2190 Ethiopia Appeal \u2013 Help sponsor a nurse to train and to help others G\u00f6bekli Tepe, Turkey: a new wonder of the ancient world by Jeremy Seal (Telegraph Travel Section 23/04/2013) \u2192"
+                }
+            ]
+        }
+    ],
+    "reject_demos": [
+        {
+            "question": "Why are so many mentally ill people who suffer from schizophrenia convinced the FBI and or government are watching them?",
+            "answer": "I apologize, but I couldn't find an answer to your question in the search results.",
+            "docs": [
+                {
+                    "title": "Living with mental illness | The non-hip hippies",
+                    "text": "Living with mental illness | The non-hip hippies a boy is cold and distant towards his mother and the mother herself seems to suffer with postnatal depression. Many people feel that it is implied that the boy suffers from schizophrenia, but this is not explicitly mentioned in the film nor the book. It is however a depiction of some sort of mental illness. And if you click this link, wikipedia will provide you with a list of films that feature mental illnesses and there is a long list under \u201cschizophrenia\u201d as well. I am planning to watch as many of them as possible in October, as I am",
+                    "url": "https://thenonhiphippies.org/2013/09/11/living-with-mental-illness/",
+                    "score": 22.7928,
+                    "answers_found": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                },
+                {
+                    "title": "Comment History - Mad In America",
+                    "text": "Comment History - Mad In America the severely mentally ill. Psychosis is recognized and is a matter of concern in all traditional, third world and tribal cultures. Your article is just one more silly addition to the misconceptions so many people promulgate in the West, about traditional cultures and mental illness. Why Do Congenitally Blind People Never Get Diagnosed with Schizophrenia? tusu November 30, 2014 at 9:30 am The agenda is very clear: to prevent people with schizophrenia from getting the help they need; to make SURE they do not get any effective help. In other words, to exterminate them. AND to convince them this disease",
+                    "url": "https://www.madinamerica.com/comment-history/?user_id=4957",
+                    "score": 22.4164,
+                    "answers_found": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                },
+                {
+                    "title": "Invisible wounds | BusinessWorld",
+                    "text": "Invisible wounds | BusinessWorld otherwise be suffering in silence and prevent them from making an irreversible decision. Medical education and services provider MIMS cited a study conducted by Dr. Tomas Bautista which reported that roughly 1% of people recorded with mental illness suffer from schizophrenia, making it the most common mental illness in the Philippines. \u201cTriggered by many factors such as genetics, and environmental stress, patients with schizophrenia experience hallucinations, delusions, and mood disturbances. The number one reason why patients with schizophrenia are admitted is auditory hallucination,\u201d MIMS wrote on its Web site. Schizophrenia is also often characterized by abnormal social behavior and failure",
+                    "url": "https://www.bworldonline.com/invisible-wounds/",
+                    "score": 21.9474,
+                    "answers_found": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                },
+                {
+                    "title": "Advocating Albertan \u2013 A blog with a focus on schizophrenia and how it affects those who live with it. Mental illness is often hidden because of stigma and misunderstanding. Advocating Albertan aims to change that, one story at a time. So caregivers, anybody who has a mental illness, and those who simply wish to understand, welcome.",
+                    "text": "Advocating Albertan \u2013 A blog with a focus on schizophrenia and how it affects those who live with it. Mental illness is often hidden because of stigma and misunderstanding. Advocating Albertan aims to change that, one story at a time. So caregivers, anybody who has a mental illness, and those who simply wish to understand, welcome. illness receive inadequate care for other ailments. Today I will discuss in more detail why this happens, how to avoid it, and how to watch for it. Lets dive in shall we? Many people are aware of stigma and the impact it has towards getting treatment for your mental health. Unfortunately, this stigma can be found in unexpected places such as hospitals and other medical facilities. While there are many people who are caring and compassionate towards those with schizophrenia, there are some people who are uneducated on the subject that may inadvertently or knowingly mistreat people with schizophrenia. This",
+                    "url": "https://advocatingalbertan.ca/",
+                    "score": 21.9423,
+                    "answers_found": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                },
+                {
+                    "title": "Ill-Equipped | Bookshare",
+                    "text": "Ill-Equipped | Bookshare By: Human Rights Watch Staff Mentally ill offenders face mistreatment and neglect in many U.S. prisons. One in six U.S. prisoners is mentally ill. Many of them suffer from serious illnesses such as schizophrenia, bipolar disorder, and major depression. There are three times as many men and women with mental illness in U.S. prisons as in mental health hospitals. The rate of mental illness in the prison population is three times higher than in the general population. This 215-page report examines how prisons are dangerous and damaging places for mentally ill people. Other prisoners victimize and exploit them. Prison staff",
+                    "url": "https://www.bookshare.org/browse/book/151287?returnPath=L2Jyb3dzZS9jb2xsZWN0aW9uLzE5NDMzMj9tb2R1bGVOYW1lPXB1YmxpYyZvZmZzZXQ9MTAwJmFtcDtzb3J0T3JkZXI9QVVUSE9S",
+                    "score": 21.8955,
+                    "answers_found": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                }
+            ]
+        },
+        {
+            "question": "What happens short-term and long-term when a person defaults on their student loans?",
+            "answer": "I apologize, but I couldn't find an answer to your question in the search results.",
+            "docs": [
+                {
+                    "title": "What Happens When You Default On Your Student Loans? And What You Can Do To Avoid It? | SuperMoney!",
+                    "text": "What Happens When You Default On Your Student Loans? And What You Can Do To Avoid It? | SuperMoney! What Happens When You Default On Your Student Loans? And What You Can Do To Avoid It? Each day, 3,000 borrowers default on their student loans in the U.S., according to the Consumer Federation of America. With federal student loan debt at $1.3 billion, many students are finding they can\u2019t keep up with payments. In other words, they\u2019ve failed to make scheduled payments for 270 days (nine months). But what happens when you default on your federal student loans? If you\u2019re struggling to make regular payments on your student loans, think twice before joining the default bandwagon. The long-term financial",
+                    "url": "https://www.supermoney.com/happens-default-federal-student-loans/",
+                    "score": 22.5679,
+                    "answers_found": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                },
+                {
+                    "title": "Short-term Loans - Administrative",
+                    "text": "Short-term Loans - Administrative Short term loans are available to students who are currently enrolled and meet the criteria noted below. The amount of the short term loan will vary depending on the amount of tuition for the student. Students must meet the following criteria in order to qualify for a loan: No outstanding blocks (Service Indicators preventing the student from receiving a Short Term Loan). No outstanding loans (Service Indicator showing loan default status). Students who have previously defaulted on a short-term loan ( A loan that has been sent to a collection agency). Students may apply for short-term loans in person at",
+                    "url": "https://www.unthsc.edu/administrative/student-finance-and-cashiering-services/short-term-loans/",
+                    "score": 22.0389,
+                    "answers_found": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                },
+                {
+                    "title": "What are the Consequences of Defaulting on a Federal Student Loan? - loan.com",
+                    "text": "What are the Consequences of Defaulting on a Federal Student Loan? - loan.com terms and repayment schedules but the risk of defaulting on a Federal student loan is present if you have trouble making the payments. By understanding these loans you will be able to try to avoid the consequences of defaulting. The loan is considered to be defaulted after 270 days if the payments are supposed to be made monthly and after 330 days if the payments are supposed to be made less frequently than monthly. The Short and Long-Term Consequences of Defaulting on a Federal Student Loan After you have defaulted on a Federal student loan, the U.S. government will have",
+                    "url": "https://www.loan.com/student-loans/what-are-the-consequences-of-defaulting-on-a-federal-student-loan.html",
+                    "score": 21.5809,
+                    "answers_found": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                },
+                {
+                    "title": "I Defaulted on my Student Loans. What Happens Next? | Credit.com",
+                    "text": "I Defaulted on my Student Loans. What Happens Next? | Credit.com Advertiser Disclosure January 20, 2017 by Christine DiGangi You may not like having to make student loan payments, but you don\u2019t have much of a choice: Not paying your student loans has some pretty severe consequences that can follow you for years. Here\u2019s what happens when you don\u2019t pay your student loans. What Is Defaulting on a Student Loan? If you\u2019ve defaulted on your student loan, that means you\u2019ve failed to repay your loans as agreed. That could involve several things: You\u2019ve gone too long without making a payment, you\u2019ve violated terms and conditions of the loan or you fraudulently",
+                    "url": "https://www.credit.com/loans/student-loans/student-articles/defaulted-student-loans/",
+                    "score": 21.3771,
+                    "answers_found": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                },
+                {
+                    "title": "Irreversible Consequences of the Default on a Loan | SameDayLoans365",
+                    "text": "Irreversible Consequences of the Default on a Loan | SameDayLoans365 Home \u00bb Knowledge Base \u00bb Irreversible Consequences of the Default on a Loan Defaulting on any loan can have many severe consequences for the borrower, both on the short term and over the long haul, as well. What is a Loan Default A loan default happens when the borrower fails to pay back a loan based on the contract they signed when they accepted the loan. For most consumer loans, that usually means several payments have been missed throughout several months. In the vast majority of cases, lenders allow a grace period before assessing penalties on the borrower for missing",
+                    "url": "https://samedayloans365.org/knowledge-base/irreversible-consequences-of-the-default-on-a-loan/",
+                    "score": 20.9292,
+                    "answers_found": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "rec_score": 0.0
+                }
+            ]
+        }
+    ]
+}
