@@ -28,7 +28,7 @@ answers = ["Asian elephants live in the forests and grasslands of South and Sout
           "The French alphabet uses 26 letters, the same as the English alphabet."]
 ```
 
-*This section was adapted from the [LangSmith Evaluation tutorial](https://docs.smith.langchain.com/evaluation/tutorials/evaluation).*
+*Parts of this section was adapted from the [LangSmith Evaluation tutorial](https://docs.smith.langchain.com/evaluation/tutorials/evaluation).*
 
 ## Set up
 
@@ -60,11 +60,11 @@ quickstart/
 
 ## Document retrieval
 
-Before we peform document retrieval, we need to do some setup. First, as we are retrieving over the DPR wikipedia snapshot, you will need to download using the following command:
+Before we perform document retrieval, we need to do some setup. First, as we are retrieving over the DPR wikipedia snapshot, you will need to download using the following command:
 
 ```bash
 wget https://dl.fbaipublicfiles.com/dpr/wikipedia_split/psgs_w100.tsv.gz
-gzip -xzvf psgs_w100.tsv.gz
+gzip -dv psgs_w100.tsv.gz
 export DPR_WIKI_TSV=$PWD/psgs_w100.tsv
 ```
 
@@ -213,10 +213,10 @@ Sample output:
 
     // Response correctness metrics
 
-    // Regardless of response type (refusal or answered), check if ground truth claim is in the reponse. 
+    // Regardless of response type (refusal or answered), check if ground truth claim is in the response. 
     "regular_claims_nli": 33.33333333333333,
     
-    // Only for qns with answered responses, check if ground truth claim is in the reponse. 
+    // Only for qns with answered responses, check if ground truth claim is in the response. 
     "answered_claims_nli": 33.33333333333333,
 
     // Calculate EM for all qns that are answered and answerable, avg by # of answered questions (EM_alpha)
@@ -268,4 +268,4 @@ Please find the complete code used in this tutorial in `custom_example.py`. You 
 CUDA_VISIBLE_DEVICES=0,1 python custom_example.py 
 ```
 
-If you are interested in running the evaluations with benchamrk data instead of custom data (similar to how it was done in the paper), please refer to the guide in [benchmark data](../benchmark_data).
+If you are interested in running the evaluations with benchmark data instead of custom data (similar to how it was done in the paper), please refer to the guide in [guides](../guides).

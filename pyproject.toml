@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "trust_eval"
-version = "0.1.0"
+version = "0.1.1"
 description = "Metric to measure RAG responses with inline citations"
 authors = ["Shang Hong Sim <simshanghong@gmail.com>"]
 license = "CC BY-NC 4.0"
@@ -20,6 +20,7 @@ scipy = "^1.14.1"
 colorlog = "^6.9.0"
 nltk = "^3.9.1"
 py3nvml = "^0.2.7"
+sentence-transformers = "^3.4.0"
 
 [build-system]
 requires = ["poetry-core"]
