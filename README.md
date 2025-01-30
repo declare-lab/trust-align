@@ -1,5 +1,7 @@
 # Measuring and Enhancing Trustworthiness of LLMs in RAG through Grounded Attributions and Learning to Refuse
 
+> 📣 We have open-sourced the Trust-Aligned models [here](https://huggingface.co/collections/declare-lab/trust-align-679491760dd03cc5f4d479e6)!
+
 > 📣 This paper has been accepted to ICLR 2025!
 
 > 📣 We are releasing Trust-Score, a holistic evaluation of
