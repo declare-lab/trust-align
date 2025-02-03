@@ -109,7 +109,7 @@ def load_vllm(model_name_or_path: str, args: Any, dtype: str="bfloat16") -> Tupl
 
     # Load the tokenizer
     tokenizer = model.get_tokenizer()
-    tokenizer.padding_side = "left"
+    tokenizer.padding_side = "left" # type: ignore[union-attr]
     
     return model, tokenizer, sampling_params
 

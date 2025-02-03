@@ -22,7 +22,7 @@ class BaseConfig(ABC):
 
         valid_fields = {f.name for f in fields(cls)}
         valid_data = {key: value for key, value in yaml_data.items() if key in valid_fields}
-        config = cls(yaml_path=yaml_path, **valid_data)
+        config = cls(yaml_path=yaml_path, **valid_data) # type: ignore[call-arg]
         return config
     
     def _generate_path(self, dir: str, file_name: str) -> str:
@@ -100,7 +100,7 @@ class EvaluationConfig(BaseConfig):
     data_type: Literal["asqa", "qampari", "eli5"] = "eli5"
     eval_file: Optional[str] = None
     result_path: Optional[str] = None  # output file path for evaluation result (required)
-    eval_type: Literal["em", "em5", "cm"] = "cm"  # evaluation type for different dataset format
+    eval_type: str = "cm"  # evaluation type for different dataset format ["em", "em5", "cm"]
 
     # correctness configs
     compute_correctness: bool = True
@@ -128,6 +128,7 @@ class EvaluationConfig(BaseConfig):
         
         if self.data_type in data2eval:
             eval_config = data2eval[self.data_type]
+            assert isinstance(eval_config["eval_type"], str) and eval_config["eval_type"] in ["em", "em5", "cm"]
             self.eval_type = eval_config["eval_type"]
             for key, value in eval_config.items():
                 setattr(self, key, value)
