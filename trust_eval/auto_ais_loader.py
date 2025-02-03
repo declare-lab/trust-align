@@ -22,7 +22,8 @@ def get_autoais_model_and_tokenizer(args: Any) -> Tuple[AutoModelForSeq2SeqLM, A
             args.autoais_model,
             torch_dtype=torch.bfloat16,
             max_memory=get_max_memory(),
-            device_map="auto"
+            device_map="auto",
+            offload_folder="offload"
         )
         _autoais_tokenizer = AutoTokenizer.from_pretrained(
             args.autoais_model,

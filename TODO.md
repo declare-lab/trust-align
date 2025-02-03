@@ -17,8 +17,8 @@
 - [x] create a quickstart
 - [x] fill out concepts/metrics.md
 - [X] integrate  to llamaindex
+- [x] type check more functions
 
 - [ ] add more docstrings
-- [ ] type check more functions
 - [ ] integrate to langchain
 - [ ] langchain blog

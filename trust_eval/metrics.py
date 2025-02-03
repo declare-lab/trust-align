@@ -604,6 +604,11 @@ def _run_nli_autoais(passage: str, claim: str, args: Any) -> int:
 
     input_text = "premise: {} hypothesis: {}".format(passage, claim)
     input_ids = autoais_tokenizer(input_text, return_tensors="pt").input_ids.to(autoais_model.device)
+
+    # print(f"Input Text: {input_text}")
+    # print(f"Tokenized Input: {input_ids}")
+    # print(f"Device: {autoais_model.device}")
+
     with torch.inference_mode():
         outputs = autoais_model.generate(input_ids, max_new_tokens=10)
     result = autoais_tokenizer.decode(outputs[0], skip_special_tokens=True)
