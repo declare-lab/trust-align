@@ -41,10 +41,10 @@ Sample output:
 
     // Response correctness metrics
 
-    // Regardless of response type (refusal or answered), check if ground truth claim is in the reponse. 
+    // Regardless of response type (refusal or answered), check if ground truth claim is in the response. 
     "regular_str_em": 41.666666666666664,
 
-    // Only for qns with answered responses, check if ground truth claim is in the reponse. 
+    // Only for qns with answered responses, check if ground truth claim is in the response. 
     "answered_str_em": 66.66666666666666,
 
     // Calculate EM for all qns that are answered and answerable, avg by # of answered questions (EM_alpha)

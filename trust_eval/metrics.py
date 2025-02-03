@@ -1,5 +1,6 @@
 import collections
 import copy
+import re
 from typing import Any, Dict, List, Optional
 
 import numpy as np
@@ -12,10 +13,10 @@ from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
 from .auto_ais_loader import get_autoais_model_and_tokenizer
 from .logging_config import logger
-from .utils import *
+from .utils import format_document, normalize_answer, remove_citations
 
 
-def compute_len(data):
+def compute_len(data: List[Dict[str, Any]]) -> float:
     """Compute average length of predictions."""
 
     if len(data) == 0:
@@ -28,13 +29,13 @@ def compute_len(data):
         cntr += 1
     return res / cntr
 
-def _is_answerable(supported_claims):
+def _is_answerable(supported_claims: np.ndarray) -> bool:
     return any(supported_claims)
 
-def _is_refusal(item, args):
+def _is_refusal(item: Dict[str, Any], args: Any) -> bool:
     return not fuzz.partial_ratio(normalize_answer(args.rejection_flag), normalize_answer(item['output'])) > args.rejection_threshold
 
-def _compute_exact_match_single_query(item, args, calib=False, parametric=False):
+def _compute_exact_match_single_query(item: Dict[str, Any], args: Any, calib: bool=False, parametric: bool=False) -> float:
     loc_acc = []
     if calib:
         supported_claims = np.bitwise_or.reduce([doc["answers_found"] for doc in item['docs']]).tolist()
@@ -50,11 +51,11 @@ def _compute_exact_match_single_query(item, args, calib=False, parametric=False)
             loc_acc.append(_exact_presence(ans_list, item["output"]))
 
     if calib and parametric:
-        return np.sum(a=loc_acc)/len(supported_claims)
+        return float(np.sum(a=loc_acc)/len(supported_claims))
     else:
-        return np.mean(loc_acc)
+        return float(np.mean(loc_acc))
 
-def compute_exact_match(data, args, calib=False, parametric=False):
+def compute_exact_match(data: List[Dict[str, Any]], args: Any, calib: bool=False, parametric: bool=False) -> float:
     """
     Computes exact match (STR-EM) and hit metrics (STR-EM-HIT) (only for ASQA) for given data.
 
@@ -88,19 +89,19 @@ def compute_exact_match(data, args, calib=False, parametric=False):
     
     if len(data) == 0:
         logger.warning("Warning: data should not be zero")
-        return 0, 0
+        return 0
 
     if 'answers' not in data[0] or data[0]['answers'] is None:
         logger.warning("Warning: no answers found in data")
-        return 0, 0
+        return 0
 
     acc = []
 
     for item in tqdm(data):
         acc.append(_compute_exact_match_single_query(item, args, calib=False, parametric=False))
-    return 100 * np.mean(acc)
+    return float(100 * np.mean(acc))
 
-def get_all_em_scores(data: List[Dict], normalized_data: List[Dict], normalized_answered_data: List[Dict], normalized_answerable_data: List[Dict], args):
+def get_all_em_scores(data: List[Dict], normalized_data: List[Dict], normalized_answered_data: List[Dict], normalized_answerable_data: List[Dict], args: Any) -> Dict[str, Any]:
     result = {}
     result['regular_str_em'] = compute_exact_match(normalized_data, args)
     result['answered_str_em'] = compute_exact_match(normalized_answered_data, args)
@@ -117,7 +118,7 @@ def get_all_em_scores(data: List[Dict], normalized_data: List[Dict], normalized_
     return result
 
 
-def compute_claim_match(data, args, calib=False, parametric=False):
+def compute_claim_match(data: List[Dict[str, Any]], args: Any, calib: bool=False, parametric: bool=False) -> Dict[str, Any]:
     
     autoais_model, autoais_tokenizer = get_autoais_model_and_tokenizer(args)
     logger.info("Computing claims...")
@@ -196,11 +197,11 @@ def compute_claim_match(data, args, calib=False, parametric=False):
         }
 
 
-def get_all_cm_scores(data: List[Dict], normalized_data: List[Dict], normalized_answered_data: List[Dict], normalized_answerable_data: List[Dict], args):
+def get_all_cm_scores(data: List[Dict], normalized_data: List[Dict], normalized_answered_data: List[Dict], normalized_answerable_data: List[Dict], args: Any) -> Dict[str, Any]:
     return compute_claim_match(normalized_data, args, calib=args.calib, parametric=args.parametric)
 
 
-def compute_qampari_f1(data, args, cot=False, prefix="", calib=False, parametric=False):
+def compute_qampari_f1(data: List[Dict[str, Any]], args: Any, cot: bool=False, prefix: str="", calib: bool=False, parametric: bool=False) -> Dict[str, Any]:
     if len(data) == 0:
         logger.warning("Warning: data should not be zero")
         return {
@@ -212,11 +213,11 @@ def compute_qampari_f1(data, args, cot=False, prefix="", calib=False, parametric
             prefix + "qampari_f1_top5": 0,
         }
     
-    prec = []
-    rec = []
-    rec_top5 = []
-    f1 = []
-    f1_top5 = []
+    prec: List[float] = []
+    rec: List[float] = []
+    rec_top5: List[float] = []
+    f1: List[float] = []
+    f1_top5: List[float] = []
 
     num_preds = []
     for item in tqdm(data):
@@ -272,7 +273,7 @@ def compute_qampari_f1(data, args, cot=False, prefix="", calib=False, parametric
     }
 
 
-def get_all_em5_scores(data: List[Dict], normalized_data: List[Dict], normalized_answered_data: List[Dict], normalized_answerable_data: List[Dict], args):
+def get_all_em5_scores(data: List[Dict], normalized_data: List[Dict], normalized_answered_data: List[Dict], normalized_answerable_data: List[Dict], args: Any) -> Dict[str, Any]:
     result = {}
     result.update(_compute_incorrect_frequency(normalized_answered_data))
     result.update(compute_qampari_f1(normalized_data, args, prefix="regular_"))
@@ -288,12 +289,10 @@ def get_all_em5_scores(data: List[Dict], normalized_data: List[Dict], normalized
     return result
 
 
-def compute_citation_metrics(data,
-                             args,
-                             decontext=False,
-                             concat=False,
-                             is_qampari=False,
-                             at_most_citations=None):
+def compute_citation_metrics(data: List[Dict[str, Any]],
+                             args: Any,
+                             is_qampari: bool=False,
+                             at_most_citations: Optional[bool]=None) -> Dict[str, Any]:
     """
     Compute AutoAIS score.
 
@@ -305,16 +304,6 @@ def compute_citation_metrics(data,
     """
 
     logger.info(f"Running AutoAIS...")
-
-    def _format_document(doc):
-        """Format document for AutoAIS."""
-
-        if "sent" in doc:
-            # QA-extracted docs
-            return "Title: %s\n%s" % (doc['title'], doc['sent'])
-        else:
-            return "Title: %s\n%s" % (doc['title'], doc['text'])
-
 
     regular_ais_scores = []
     regular_ais_scores_prec = []
@@ -357,7 +346,7 @@ def compute_citation_metrics(data,
                 if at_most_citations is not None:
                     ref = ref[:at_most_citations]
                 total_citations += len(ref)
-                joint_passage = '\n'.join([_format_document(item['docs'][psgs_id]) for psgs_id in ref])
+                joint_passage = '\n'.join([format_document(item['docs'][psgs_id]) for psgs_id in ref])
 
             # If not directly rejected by citation format error, calculate the recall score
             if joint_entail == -1: 
@@ -381,14 +370,14 @@ def compute_citation_metrics(data,
                 # Precision check: did the model cite any unnecessary documents?
                 for psgs_id in ref:
                     # condition A
-                    passage = _format_document(item['docs'][psgs_id]) 
+                    passage = format_document(item['docs'][psgs_id]) 
                     nli_result = _run_nli_autoais(passage, target_sent, args)
 
                     # condition B
                     if not nli_result:
                         subset_exclude = copy.deepcopy(ref)
                         subset_exclude.remove(psgs_id)
-                        passage = '\n'.join([_format_document(item['docs'][pid]) for pid in subset_exclude])
+                        passage = '\n'.join([format_document(item['docs'][pid]) for pid in subset_exclude])
                         nli_result = _run_nli_autoais(passage, target_sent, args)
                         # check if it could support any claims within the subset_exclude
                         subset_coverage = np.bitwise_or.reduce([item['docs'][pid]['answers_found'] for pid in subset_exclude])
@@ -443,13 +432,13 @@ def compute_citation_metrics(data,
     }
 
 
-def get_citation_scores(data: List[Dict], normalized_data: List[Dict], normalized_answered_data: List[Dict], normalized_answerable_data: List[Dict], args):
+def get_citation_scores(data: List[Dict], normalized_data: List[Dict], normalized_answered_data: List[Dict], normalized_answerable_data: List[Dict], args: Any) -> Dict[str, Any]:
     result = {}
     result.update(compute_citation_metrics(data, args, is_qampari=args.is_qampari, at_most_citations=args.at_most_citations))
     return result
 
     
-def compute_macro_metrics(data, args):    
+def compute_macro_metrics(data: List[Dict[str, Any]], args: Any) -> Dict[str, Any]:    
     reject_rec_num = 0
     reject_rec = 0
     reject_prec_num = 0
@@ -508,11 +497,11 @@ def compute_macro_metrics(data, args):
     }
 
 
-def get_macro_scores(data: List[Dict], normalized_data: List[Dict], normalized_answered_data: List[Dict], normalized_answerable_data: List[Dict], args):
+def get_macro_scores(data: List[Dict], normalized_data: List[Dict], normalized_answered_data: List[Dict], normalized_answerable_data: List[Dict], args: Any) -> Dict[str, Any]:
     return compute_macro_metrics(data, args)
     
 
-def _compute_incorrect_frequency(answered_data):
+def _compute_incorrect_frequency(answered_data: List[Dict[str, Any]]) -> Dict[str, Any]:
     
     if len(answered_data) == 0:
         logger.warning("Warning: answered_data should not be zero")
@@ -536,17 +525,13 @@ def _compute_incorrect_frequency(answered_data):
         preds = [p for p in preds if len(p) > 0] # delete empty answers
         
         # detect correct/incorrect
-        ans_correctness = []
-        for p in preds:
-            ans_correctness.append(any([_exact_presence(gts, p) for gts in calib_ground_truths]))
+        ans_correctness_ls = [any([_exact_presence(gts, p) for gts in calib_ground_truths]) for p in preds]
                     
         # detect in/not in docs
-        ans_existence = []
-        for p in preds:
-            ans_existence.append(any([_exact_presence([p], doc['text']) for doc in item['docs']]))      
+        ans_existence_ls = [any([_exact_presence([p], doc['text']) for doc in item['docs']]) for p in preds]
 
-        ans_correctness = np.array(ans_correctness)
-        ans_existence = np.array(ans_existence)
+        ans_correctness = np.array(ans_correctness_ls)
+        ans_existence = np.array(ans_existence_ls)
         if any(ans_correctness == 0):
             presence_list.append(np.sum((ans_correctness == 0) & (ans_existence == 1)) / sum(ans_correctness == 0))
             absence_list.append(np.sum((ans_correctness == 0) & (ans_existence == 0)) / sum(ans_correctness == 0))
@@ -557,7 +542,7 @@ def _compute_incorrect_frequency(answered_data):
     }
     
 
-def _exact_presence(short_answers, context):
+def _exact_presence(short_answers: List[str], context: str) -> bool:
     """Verify if any of the answers is present in the given context.
     Args:
         short_answers: list of short answers to look for in the context
@@ -576,10 +561,10 @@ def _exact_presence(short_answers, context):
     return False
 
 
-def _compute_f1(a_gold, a_pred):
+def _compute_f1(a_gold: str, a_pred: str) -> float:
     """Compute F1 score between two strings."""
 
-    def _get_tokens(s):
+    def _get_tokens(s: str) -> List[str]:
         if not s:
             return []
         return normalize_answer(s).split()
@@ -604,13 +589,13 @@ def _compute_f1(a_gold, a_pred):
     return f1
 
 
-def _compute_exact(a_gold, a_pred):
+def _compute_exact(a_gold: str, a_pred: str) -> int:
     """Check whether two strings are equal up to normalization."""
 
     return int(normalize_answer(a_gold) == normalize_answer(a_pred))
 
 
-def _run_nli_autoais(passage, claim, args):
+def _run_nli_autoais(passage: str, claim: str, args: Any) -> int:
     """
     Run inference for assessing AIS between a premise and hypothesis.
     Adapted from https://github.com/google-research-datasets/Attributed-QA/blob/main/evaluation.py
@@ -625,10 +610,10 @@ def _run_nli_autoais(passage, claim, args):
     inference = 1 if result == "1" else 0
     return inference
 
-def compute_answered_ratio(data: List[Dict], normalized_data: List[Dict], normalized_answered_data: List[Dict], normalized_answerable_data: List[Dict], args):
+def compute_answered_ratio(data: List[Dict], normalized_data: List[Dict], normalized_answered_data: List[Dict], normalized_answerable_data: List[Dict], args: Any) -> float:
     return round(100 * len(normalized_answered_data) / len(normalized_data), 2)
 
-def get_basic_stats(data: List[Dict], normalized_data: List[Dict], normalized_answered_data: List[Dict], normalized_answerable_data: List[Dict], args):
+def get_basic_stats(data: List[Dict], normalized_data: List[Dict], normalized_answered_data: List[Dict], normalized_answerable_data: List[Dict], args: Any) -> Dict[str, Any]:
     result = {}
     result['answered_ratio'] = round(100 * len(normalized_answered_data) / len(normalized_data), 2)
     result['answered_num'] = len(normalized_answered_data)
@@ -638,7 +623,7 @@ def get_basic_stats(data: List[Dict], normalized_data: List[Dict], normalized_an
     result['answered_length'] = compute_len(normalized_answered_data)
     return result
 
-def compute_trust_score(result, args):
+def compute_trust_score(result: Dict[str, Any], args: Any) -> Dict[str, Any]:
     if args.eval_type == "em":
         result['trust_score'] = np.mean([result['calib_str_em_f1'], result['macro_f1'], result['answered_citation_f1']])
     elif args.eval_type == "em@5":

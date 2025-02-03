@@ -8,7 +8,7 @@ As `Trust-Eval` works over a few datapoints, you will first need to define the d
 
 1. **Define the schema**: Each datapoint should include the inputs to your application and the expected outputs. These expected outputs represent what the application should ideally produce. Don't worry on obtaining perfect outputs right away; evaluation is iterative, and initial outputs can serve as a starting point.
 2. **Decide the number of datapoints**: There is no hard and fast rule in how much datapoints you should gather, rather, you should focus more on having proper coverage of edge cases you may want to guard against. Even 10-50 examples can provide a lot of value. Don't worry about getting a large number of datapoints to start as you can (and should) add over time.
-3. **Gathering the datapoints**: Most teams that are starting a new project, generally start by collecting the first 10-20 datapoints by hand. After starting with these datapoints, you can add ore datapoints based on user feedback and real-world use cases. There is also the option of augmenting the dataset with synthetically generated data. However, we recommend not worrying about those at the start and just hand labeling ~10-20 examples.
+3. **Gathering the datapoints**: Most teams that are starting a new project, generally start by collecting the first 10-20 datapoints by hand. After starting with these datapoints, you can add more datapoints based on user feedback and real-world use cases. There is also the option of augmenting the dataset with synthetically generated data. However, we recommend not worrying about those at the start and just hand labeling ~10-20 examples.
 
 For this tutorial, we will create a simple dataset of six datapoints for a RAG-based question-answering application.
 
@@ -161,7 +161,7 @@ Your eval config yaml file should at least look like this:
 eval_file: "output/custom_data.json"
 ```
 
-When evaluating custom data, we will by default use the `claim match (cm)` mode to evaluate the LLM's outputs as opposed to `exact match (em)`. Briefly, claim match works by testing if the claim given by the LLM entails the expected or ground truth claim you have defined previously. If it entails, then the LLM's outout is correct. Exact match on the other hand is  more suitable if you have key facts that you know the LLM's answer has to contain. IF that is the case, you can define the facts and our program will try to find exact matches of the ground truth answers that you defined in the LLM output. We set the default to `claim match (cm)` as most applications will have questions-answer pairs with no clearly defined fact set.
+When evaluating custom data, we will by default use the `claim match (cm)` mode to evaluate the LLM's outputs as opposed to `exact match (em)`. Briefly, claim match works by testing if the claim given by the LLM entails the expected or ground truth claim you have defined previously. If it entails, then the LLM's output is correct. Exact match on the other hand is  more suitable if you have key facts that you know the LLM's answer has to contain. IF that is the case, you can define the facts and our program will try to find exact matches of the ground truth answers that you defined in the LLM output. We set the default to `claim match (cm)` as most applications will have questions-answer pairs with no clearly defined fact set.
 
 ## Results Analysis
 

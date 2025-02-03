@@ -1,9 +1,12 @@
 # logging_config.py
 
+import logging
+from typing import Optional
+
 import colorlog
 
 
-def setup_logger(name=None):
+def setup_logger(name: Optional[str] = None) -> logging.Logger:
     fmt_string = '%(log_color)s %(asctime)s - %(levelname)s - %(message)s'
     log_colors = {
         'DEBUG': 'white',

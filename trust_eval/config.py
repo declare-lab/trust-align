@@ -2,17 +2,18 @@ import os
 from abc import ABC
 from dataclasses import dataclass, fields
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal, Optional, Type, TypeVar
 
 import yaml
 
 from .logging_config import logger
 
+T = TypeVar("T", bound="BaseConfig")
 
 @dataclass
 class BaseConfig(ABC):
     @classmethod
-    def from_yaml(cls, yaml_path: str) -> "BaseConfig":
+    def from_yaml(cls: Type[T], yaml_path: str) -> T:
         """
         Load configuration from a YAML file and update the default instance.
         """
@@ -75,7 +76,7 @@ class ResponseGeneratorConfig(BaseConfig):
     overwrite: bool = True # Overwrite existing citations
     external_docs: Optional[str] = None # Use external documents
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.data_file = self.data_file or self._generate_path(
             dir="data", file_name=f"{self.data_type}_eval_top100_calibrated.json"
         )
@@ -98,7 +99,7 @@ class EvaluationConfig(BaseConfig):
     yaml_path: str
     data_type: Literal["asqa", "qampari", "eli5"] = "eli5"
     eval_file: Optional[str] = None
-    result_path: str = None  # output file path for evaluation result (required)
+    result_path: Optional[str] = None  # output file path for evaluation result (required)
     eval_type: Literal["em", "em5", "cm"] = "cm"  # evaluation type for different dataset format
 
     # correctness configs
@@ -115,7 +116,7 @@ class EvaluationConfig(BaseConfig):
     rejection_threshold: int = 85
     autoais_model: str = "google/t5_xxl_true_nli_mixture"
     
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """
         Set default configurations based on the evaluation type.
         """

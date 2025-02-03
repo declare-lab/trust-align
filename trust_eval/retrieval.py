@@ -8,7 +8,9 @@ import os
 import pickle
 import time
 from pathlib import Path
+from typing import Any, Dict, List, Union
 
+import numpy as np
 import torch
 from sentence_transformers import SentenceTransformer
 from tqdm import tqdm
@@ -16,10 +18,10 @@ from tqdm import tqdm
 from .logging_config import logger
 
 
-def retrieve(queries, top_k=5):
+def retrieve(queries: Union[str, List[str]], top_k: int=5) -> Union[List[Dict[str, Any]], List[List[Dict[str, Any]]]]:
     return gtr_wiki_query(queries, top_k=5)
 
-def gtr_wiki_query(queries, top_k=5):
+def gtr_wiki_query(queries: Union[str, List[str]], top_k: int=5) -> Union[List[Dict[str, Any]], List[List[Dict[str, Any]]]]:
     """
     Handle both single and batch queries for GTR Wikipedia search.
     
@@ -40,10 +42,10 @@ def gtr_wiki_query(queries, top_k=5):
 
     # Encode the queries
     with torch.inference_mode():
-        query_embeddings = encoder.encode(
+        query_embeddings_raw = encoder.encode(
             queries, batch_size=4, show_progress_bar=True, normalize_embeddings=True
         )
-        query_embeddings = torch.tensor(query_embeddings, dtype=torch.float16, device="cpu")
+        query_embeddings = torch.tensor(query_embeddings_raw, dtype=torch.float16, device="cpu")
     
     # Load Wikipedia corpus
     DOCS_PICKLE = os.environ.get("DOCS_PICKLE", "docs.pkl")
@@ -113,12 +115,12 @@ def gtr_wiki_query(queries, top_k=5):
     # Return a single result if input was a single query
     return results[0] if len(results) == 1 else results
 
-def gtr_build_index(encoder, docs):
+def gtr_build_index(encoder: SentenceTransformer, docs: List[str]) -> np.ndarray:
     with torch.inference_mode():
         embs = encoder.encode(docs, batch_size=4, show_progress_bar=True, normalize_embeddings=True)
         embs = embs.astype("float16")
 
-    GTR_EMB = os.environ.get("GTR_EMB")
+    GTR_EMB = os.environ.get("GTR_EMB", "gtr_wikipedia_index.pkl")
     with open(GTR_EMB, "wb") as f:
         pickle.dump(embs, f)
     return embs

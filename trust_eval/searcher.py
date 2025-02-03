@@ -1,4 +1,5 @@
 import json
+from typing import Any, Dict, List
 
 import numpy as np
 import torch
@@ -6,17 +7,19 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from torch.nn.functional import normalize
 
+from .utils import format_document
 
-def doc_to_text_tfidf(doc):
+
+def doc_to_text_tfidf(doc: Dict[str, Any]) -> str:
     return doc['title'] + ' ' + doc['text']
 
-def doc_to_text_dense(doc):
+def doc_to_text_dense(doc: Dict[str, Any]) -> str:
     return doc['title'] + '. ' + doc['text']
 
 
 class SearcherWithinDocs:
 
-    def __init__(self, docs, retriever, model=None, tokenizer=None, device="cuda"):
+    def __init__(self, docs: List[Dict[str, Any]], retriever: str, model: Any=None, tokenizer: Any=None, device: str="cuda") -> None:
         self.retriever = retriever
         self.docs = docs
         self.device = device
@@ -32,34 +35,29 @@ class SearcherWithinDocs:
         else:
             raise NotImplementedError
 
-    def search(self, query):
+    def search(self, query:str) -> int:
         # Return the top-1 result doc id
 
         if self.retriever == "tfidf":
             tfidf_query = self.tfidf.transform([query])[0]
             similarities = [cosine_similarity(tfidf_doc, tfidf_query) for tfidf_doc in self.tfidf_docs]
             best_doc_id = np.argmax(similarities)
-            return best_doc_id
         elif "gtr" in self.retriever:
             q_embed = self.model.encode([query], device=self.device, convert_to_numpy=False, convert_to_tensor=True, normalize_embeddings=True)
             score = torch.matmul(self.embeddings, q_embed.t()).squeeze(1).detach().cpu().numpy()
             best_doc_id = np.argmax(score)
-            return best_doc_id
         elif "nli" in self.retriever:
             claim = query
-            print(f'{claim=}')
-            print(f'{self.docs=}')
-            print(f'{self.get_entailment_score(self._format_document(self.docs[0]), claim)=}')
-
-            score = [self.get_entailment_score(self._format_document(doc), claim) for doc in self.docs]
+            score = np.array([self.get_entailment_score(format_document(doc), claim) for doc in self.docs])
             print(f'{score=}')
             best_doc_id = np.argmax(score)
             # print(f'{best_doc_id=}')
-            return best_doc_id
         else:
             raise NotImplementedError
+        return int(best_doc_id)
+
         
-    def get_entailment_score(self, passage, claim):
+    def get_entailment_score(self, passage: str, claim: str) -> float:
         input_text = "premise: {} hypothesis: {}".format(passage, claim)
         input_ids = self.tokenizer(input_text, return_tensors="pt").input_ids.to(self.model.device)
 
@@ -76,12 +74,3 @@ class SearcherWithinDocs:
 
         entailment_score = sum(log_probs)
         return entailment_score
-    
-    def _format_document(self,doc):
-        """Format document for AutoAIS."""
-
-        if "sent" in doc:
-            # QA-extracted docs
-            return "Title: %s\n%s" % (doc['title'], doc['sent'])
-        else:
-            return "Title: %s\n%s" % (doc['title'], doc['text'])

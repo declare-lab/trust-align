@@ -4,6 +4,7 @@ import logging
 import os
 import re
 import string
+from typing import Any, Dict, List
 
 import numpy as np
 import torch
@@ -20,7 +21,7 @@ from .searcher import SearcherWithinDocs
 from .utils import get_max_memory, remove_citations
 
 
-def post_hoc_cite(data, args):
+def post_hoc_cite(data: List[Dict[str, Any]], args: Any) -> List[Dict[str, Any]]:
     logger.info("Performing post hoc citation...")
 
     new_data = []
@@ -39,6 +40,7 @@ def post_hoc_cite(data, args):
         doc_list = item['docs']
         
         if args.external_docs is not None:
+            assert external is not None
             assert external[idx]['question'] == item['question']
             doc_list = external[idx]['docs'][:args.ndoc]
 
@@ -90,6 +92,3 @@ def post_hoc_cite(data, args):
         new_data.append(item)
 
     return new_data
-
-if __name__ == "__main__":
-    post_hoc_cite()

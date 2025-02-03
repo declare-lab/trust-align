@@ -2,6 +2,7 @@
 
 import copy
 import json
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import scipy.stats as stats
@@ -24,7 +25,7 @@ from .utils import normalize_answer, remove_citations
 
 
 class Evaluator:
-    def __init__(self, config: EvaluationConfig):
+    def __init__(self, config: EvaluationConfig) -> None:
         """
         Initializes the evaluator with configurations.
 
@@ -41,10 +42,10 @@ class Evaluator:
         self.eval_data = self.load_data()
         self.normalized_data, self.normalized_answered_data, self.normalized_answerable_data = self._process_data(self.eval_data)
 
-        self.result = {}
+        self.result: Dict[str, Any] = {}
 
 
-    def _normalize_data(self, data):
+    def _normalize_data(self, data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
         Normalize the data by removing citations.
 
@@ -59,7 +60,7 @@ class Evaluator:
             item["output"] = remove_citations(item["output"])
         return normalized_data
 
-    def _compute_answered_data(self, data):
+    def _compute_answered_data(self, data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
         Extract answered data from the dataset.
 
@@ -78,7 +79,7 @@ class Evaluator:
                 answered_data.append(copy.deepcopy(item))
         return answered_data
 
-    def _compute_answerable_data(self, data):
+    def _compute_answerable_data(self, data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
         Extract answerable data from the dataset.
 
@@ -97,7 +98,7 @@ class Evaluator:
                 answerable_data.append(copy.deepcopy(item))
         return answerable_data
     
-    def _process_data(self, data):
+    def _process_data(self, data: List[Dict[str, Any]]) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         normalized_data = self._normalize_data(data)
         answered_data = self._compute_answered_data(data)
         answerable_data = self._compute_answerable_data(data)
@@ -106,11 +107,12 @@ class Evaluator:
         normalized_answerable_data = self._normalize_data(answerable_data)
         return normalized_data, normalized_answered_data, normalized_answerable_data
 
-    def load_data(self):
+    def load_data(self) -> List[Dict[str, Any]]:
+        assert self.config.eval_file is not None
         self.eval_data = json.load(open(self.config.eval_file))["data"]
         return self.eval_data
 
-    def compute_metrics(self, correctness: bool = True, citations: bool = True):
+    def compute_metrics(self, correctness: bool = True, citations: bool = True) -> Dict[str, Any]:
         """
         Compute evaluation metrics for the given dataset.
 
@@ -171,7 +173,7 @@ class Evaluator:
 
         return self.result
 
-    def save_results(self, result_path: str = None):
+    def save_results(self, output_path: Optional[str] = None) -> None:
         """
         Save evaluation results to a JSON file.
 
@@ -179,8 +181,9 @@ class Evaluator:
             results (dict): Evaluation results.
             result_path (str): Path to save the JSON file.
         """
-        if result_path is not None:
-            self.result_path = result_path
+        if output_path is not None:
+            self.result_path = output_path
 
+        assert self.result_path is not None
         with open(self.result_path, "w") as f:
             json.dump(self.result, f, indent=4)

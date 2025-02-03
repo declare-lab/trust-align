@@ -1,5 +1,6 @@
 import gc
 import logging
+from typing import Any, Tuple
 
 import torch
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
@@ -12,7 +13,7 @@ logger = logging.getLogger(__name__)
 _autoais_model = None
 _autoais_tokenizer = None
 
-def get_autoais_model_and_tokenizer(args):
+def get_autoais_model_and_tokenizer(args: Any) -> Tuple[AutoModelForSeq2SeqLM, AutoTokenizer]:
     global _autoais_model, _autoais_tokenizer
 
     if _autoais_model is None:
@@ -32,7 +33,7 @@ def get_autoais_model_and_tokenizer(args):
     return _autoais_model, _autoais_tokenizer
 
 
-def delete_autoais_model_and_tokenizer():
+def delete_autoais_model_and_tokenizer() -> None:
     """Delete the AutoAIS model and tokenizer to free GPU memory."""
     global _autoais_model, _autoais_tokenizer
 

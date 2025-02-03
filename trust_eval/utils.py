@@ -1,43 +1,61 @@
 import re
 import string
 import time
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import torch
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    PreTrainedModel,
+    PreTrainedTokenizer,
+    PreTrainedTokenizerFast,
+)
+from vllm import LLM, SamplingParams
+from vllm.transformers_utils.tokenizers import MistralTokenizer
 
 from .logging_config import logger
 
+AnyTokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast,
+                     MistralTokenizer]
 
-def normalize_answer(s):
-    def remove_articles(text):
+def normalize_answer(s: str) -> str:
+    def remove_articles(text: str) -> str:
         return re.sub(r"\b(a|an|the)\b", " ", text)
 
-    def white_space_fix(text):
+    def white_space_fix(text: str) -> str:
         return " ".join(text.split())
 
-    def remove_punc(text):
+    def remove_punc(text: str) -> str:
         exclude = set(string.punctuation)
         return "".join(ch for ch in text if ch not in exclude)
 
-    def lower(text):
+    def lower(text: str) -> str:
         return text.lower()
 
     return white_space_fix(remove_articles(remove_punc(lower(s))))
 
 
-def remove_citations(sent):
+def remove_citations(sent: str) -> str:
     return re.sub(r"\[\d+", "", re.sub(r" \[\d+", "", sent)).replace(" |", "").replace("]", "")
 
 
-def get_max_memory():
+def get_max_memory() -> Dict[int, str]:
     """Get the maximum memory available for the current GPU for loading models."""
     free_in_GB = int(torch.cuda.mem_get_info()[0]/1024**3)
-    max_memory = f'{free_in_GB-3}GB'
+    max_memory_str = f"{free_in_GB - 3}GB"  
     n_gpus = torch.cuda.device_count()
-    max_memory = {i: max_memory for i in range(n_gpus)}
+    max_memory = {i: max_memory_str for i in range(n_gpus)}
     return max_memory
 
 
-def load_model(model_name_or_path, dtype=torch.float16, int8=False, lora_path=None, reserve_memory=10):
+def load_model(
+    model_name_or_path: str,
+    dtype: torch.dtype = torch.float16,
+    int8: bool = False,
+    lora_path: Optional[str] = None,
+    reserve_memory: int = 10
+) -> Tuple[PreTrainedModel, PreTrainedTokenizer]:
     # Load a huggingface model and tokenizer
     # dtype: torch.float16 or torch.bfloat16
     # int8: whether to use int8 quantization
@@ -75,7 +93,7 @@ def load_model(model_name_or_path, dtype=torch.float16, int8=False, lora_path=No
     return model, tokenizer
 
 
-def load_vllm(model_name_or_path, args, dtype=torch.bfloat16):
+def load_vllm(model_name_or_path: str, args: Any, dtype: str="bfloat16") -> Tuple[LLM, AnyTokenizer, SamplingParams]:
     from vllm import LLM, SamplingParams
     logger.info(f"Loading {model_name_or_path} in {dtype}...")
     start_time = time.time()
@@ -91,12 +109,11 @@ def load_vllm(model_name_or_path, args, dtype=torch.bfloat16):
 
     # Load the tokenizer
     tokenizer = model.get_tokenizer()
-    
     tokenizer.padding_side = "left"
     
     return model, tokenizer, sampling_params
 
-def make_doc_prompt(doc, doc_id, doc_prompt, use_shorter=None):
+def make_doc_prompt(doc:dict, doc_id: int, doc_prompt: str, use_shorter: Optional[str]=None) -> str:
     # For doc prompt:
     # - {ID}: doc id (starting from 1)
     # - {T}: title
@@ -110,8 +127,8 @@ def make_doc_prompt(doc, doc_id, doc_prompt, use_shorter=None):
 
 
 
-def get_shorter_text(item, docs, ndoc, key):
-    doc_list = []
+def get_shorter_text(docs: List[Dict[str, Any]], ndoc: int, key: str) -> List[Dict[str, Any]]:
+    doc_list: List[Dict[str, Any]] = []
     for item_id, item in enumerate(docs):
         if key not in item:
             if len(doc_list) == 0:
@@ -129,7 +146,13 @@ def get_shorter_text(item, docs, ndoc, key):
 
 
 
-def make_demo(item, prompt, ndoc=None, doc_prompt=None, instruction=None, use_shorter=None, test=False):
+def make_demo(item: Dict[str, Any], 
+              prompt: str, 
+              ndoc: int, 
+              doc_prompt: str, 
+              instruction: str="", 
+              use_shorter: Optional[str]=None, 
+              test: bool=False) -> str:
     # For demo prompt
     # - {INST}: the instruction
     # - {D}: the documents
@@ -143,7 +166,7 @@ def make_demo(item, prompt, ndoc=None, doc_prompt=None, instruction=None, use_sh
         if ndoc == 0:
             prompt = prompt.replace("{D}\n", "") # if there is no doc we also delete the empty line
         else:
-            doc_list = get_shorter_text(item, item["docs"], ndoc, use_shorter) if use_shorter is not None else item["docs"][:ndoc]
+            doc_list = get_shorter_text(item["docs"], ndoc, use_shorter) if use_shorter is not None else item["docs"][:ndoc]
             text = "".join([make_doc_prompt(doc, doc_id, doc_prompt, use_shorter=use_shorter) for doc_id, doc in enumerate(doc_list)])
             prompt = prompt.replace("{D}", text)
 
@@ -155,3 +178,11 @@ def make_demo(item, prompt, ndoc=None, doc_prompt=None, instruction=None, use_sh
 
     return prompt
 
+def format_document(doc: Dict[str, Any]) -> str:
+        """Format document for AutoAIS."""
+
+        if "sent" in doc:
+            # QA-extracted docs
+            return "Title: %s\n%s" % (doc['title'], doc['sent'])
+        else:
+            return "Title: %s\n%s" % (doc['title'], doc['text'])

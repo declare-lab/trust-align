@@ -3,6 +3,7 @@ import os
 import random
 from math import ceil
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 import torch
@@ -42,16 +43,20 @@ class ResponseGenerator:
             return 4096
         return 2048  # Default fallback
 
-    def load_data(self, prompt_file: str = None, data_file: str = None):
+    def load_data(self, prompt_file: Optional[str] = None, data_file: Optional[str] = None) -> None:
         """Load prompt and evaluation data from JSON files."""
         if prompt_file is not None:
             self.prompt_data = json.load(open(prompt_file))
+        else:
+            assert self.prompt_file is not None
+            self.prompt_data = json.load(open(self.prompt_file))
         if data_file is not None:
             self.eval_data = json.load(open(data_file))
-        self.prompt_data = json.load(open(self.prompt_file))
-        self.eval_data = json.load(open(self.data_file))[:10]
+        else:
+            assert self.data_file is not None
+            self.eval_data = json.load(open(self.data_file))[:10]
 
-    def generate_responses(self, data = None):
+    def generate_responses(self, data: Optional[List[Dict[str, Any]]] = None) -> List[Dict[str, Any]]:
         """Generate responses for evaluation data."""
 
         if data is None:
@@ -87,12 +92,14 @@ class ResponseGenerator:
             # release vllm
             from vllm.distributed.parallel_state import destroy_model_parallel
             destroy_model_parallel()
-            del self.llm.chat_llm.llm_engine.model_executor.driver_worker
+            if hasattr(self.llm.chat_llm.llm_engine.model_executor, "driver_worker"):
+                del self.llm.chat_llm.llm_engine.model_executor.driver_worker
             torch.cuda.empty_cache()
             
             # Post-process each output
             for idx, item in enumerate(tqdm(data)):
                 output_array = []
+                assert batch_outputs is not None
                 for j, output in enumerate(batch_outputs[idx:idx + self.config.num_samples]):
                     output_array.append(output)
                     output_array[-1] = output_array[-1].replace("<|im_end|>", "").rstrip()
@@ -112,22 +119,28 @@ class ResponseGenerator:
         self.eval_data = data
         return data
 
-    def generate_response_single_query(self, prompt):
+    def generate_response_single_query(self, prompt: str) -> Union[str, List[str]]:
         prompt_len = len(self.llm.tokenizer.tokenize(prompt))
 
         output_array = []
         for _ in range(self.config.num_samples):
         
             logger.info(f"Max prompt length: {prompt_len}")
-            output_array.append(self.llm.generate(prompt, min(self.config.max_new_tokens, self.config.max_length-prompt_len)))
-            
-            output_array[-1] = output_array[-1].replace("<|im_end|>", "").rstrip()
-            if output_array[-1].endswith("End."):
-                output_array[-1] = output_array[-1][:-len("End.")]
-        
+
+            response = self.llm.generate(prompt, min(self.config.max_new_tokens, self.config.max_length - prompt_len))
+
+            if response is None:
+                raise ValueError("Generation failed: LLM returned None.")
+
+            response = response.replace("<|im_end|>", "").rstrip()
+            if response.endswith("End."):
+                response = response[:-len("End.")]
+
+            output_array.append(response)
+
         return output_array if len(output_array) > 1 else output_array[0]
     
-    def construct_prompt(self, eval_item):
+    def construct_prompt(self, eval_item: Dict[str, Any]) -> str:
         head_prompt = self._generate_head_prompt()
         return head_prompt + make_demo(
             eval_item, 
@@ -138,10 +151,11 @@ class ResponseGenerator:
             test=True
         )
     
-    def _generate_head_prompt(self):
+    def _generate_head_prompt(self) -> str:
         """Generate the head prompt based on demonstrations."""
         head_prompt = ""
         if not self.config.no_demo:
+            assert self.config.prompt_file is not None
             if "rejection" in self.config.prompt_file:
                 logger.warning("Using rejection head prompts...")
                 pos_train_ids = np.random.choice(len(self.prompt_data["positive_demos"]), ceil(self.config.shot / 2), replace=False)
@@ -165,7 +179,7 @@ class ResponseGenerator:
 
         return head_prompt
 
-    def _make_demo_item(self, train_item):
+    def _make_demo_item(self, train_item: Dict[str, Any]) -> str:
         """Helper to create demo items for the prompt."""
         ndoc = self.config.ndoc
         if self.config.no_doc_in_demo:
@@ -183,11 +197,11 @@ class ResponseGenerator:
             use_shorter=None
         )
 
-    def save_responses(self, output_path: str = None):
+    def save_responses(self, output_path: Optional[str] = None) -> None:
         """Save evaluation data to a JSON file."""
         if output_path is not None:
             self.output_path = output_path
-        logger.debug(f'{self.eval_data[0:2]}')
+        assert self.output_path is not None
         with open(self.output_path, "w") as f:
             json.dump({"data": self.eval_data, "config": vars(self.config)}, f, indent=4)
         logger.info(f"Results saved to {self.output_path}")
