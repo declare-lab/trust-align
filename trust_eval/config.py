@@ -1,6 +1,6 @@
 import os
 from abc import ABC
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from pathlib import Path
 from typing import Literal, Optional
 
@@ -18,11 +18,17 @@ class BaseConfig(ABC):
         """
         with open(yaml_path, "r") as file:
             yaml_data = yaml.safe_load(file)
-        
-        config = cls(yaml_path=yaml_path, **yaml_data)
+
+        valid_fields = {f.name for f in fields(cls)}
+        valid_data = {key: value for key, value in yaml_data.items() if key in valid_fields}
+        config = cls(yaml_path=yaml_path, **valid_data)
         return config
     
-
+    def _generate_path(self, dir: str, file_name: str) -> str:
+        base_dir = Path(dir)
+        base_dir.mkdir(parents=True, exist_ok=True)  # Ensure the directory exists
+        return str(base_dir / file_name)
+    
 @dataclass
 class ResponseGeneratorConfig(BaseConfig):
 
@@ -31,8 +37,8 @@ class ResponseGeneratorConfig(BaseConfig):
     model: str = "Qwen/Qwen2.5-3B-Instruct" # Model to use
     data_type: Literal["asqa", "qampari", "eli5"] = "eli5"
     prompt_file: Optional[str] = None  # Path to the prompt file
-    eval_file: Optional[str] = None  # Path to the evaluation file
-    output_path: Optional[str] = None  # Output directory for model's output
+    data_file: Optional[str] = None  # Path to the evaluation file
+    eval_file: Optional[str] = None  # Output directory for model's output
     quick_test: Optional[int] = None  # Number of examples for quick testing
 
     # ICL settings
@@ -42,7 +48,7 @@ class ResponseGeneratorConfig(BaseConfig):
     no_doc_in_demo: bool = False  # Whether to remove documents in demo
     fewer_doc_in_demo: bool = False  # Whether to use fewer documents in demo
     ndoc_in_demo: Optional[int] = None  # Number of documents in demo when using fewer docs
-    no_demo: bool = False  # Whether to disable demos
+    no_demo: bool = False  # Whether to disable demos; same effect as shot=0
     rejection: bool = True  # Whether to use rejection demos
 
     # Model and naming
@@ -62,14 +68,16 @@ class ResponseGeneratorConfig(BaseConfig):
     rejection_threshold: int = 85
     autoais_model: str = "google/t5_xxl_true_nli_mixture"
 
-    def _generate_path(self, dir: str, file_name: str) -> str:
-        base_dir = Path(dir)
-        base_dir.mkdir(parents=True, exist_ok=True)  # Ensure the directory exists
-        return str(base_dir / file_name)
+    # Posthoc settings
+    posthoc: bool = False
+    posthoc_retriever: str = "gtr-t5-large" # Retriever to use. Options: `gtr-t5-large` for PostCite, `nli` for PostAttr
+    posthoc_retriever_device: str = "cuda" # Where to put the dense retriever if using. Options: `cuda`, `cpu`
+    overwrite: bool = True # Overwrite existing citations
+    external_docs: Optional[str] = None # Use external documents
 
     def __post_init__(self):
-        self.output_path = self.output_path or self._generate_path(
-            dir="output", file_name=f"{self.data_type}_eval_top100_calibrated.json"
+        self.data_file = self.data_file or self._generate_path(
+            dir="data", file_name=f"{self.data_type}_eval_top100_calibrated.json"
         )
         
         self.eval_file = self.eval_file or self._generate_path(
@@ -90,8 +98,8 @@ class EvaluationConfig(BaseConfig):
     yaml_path: str
     data_type: Literal["asqa", "qampari", "eli5"] = "eli5"
     eval_file: Optional[str] = None
-    output_path: str = None  # output file path for evaluation result (required)
-    eval_type: Literal["em", "em@5", "cm"] = "cm"  # evaluation type for different dataset format
+    result_path: str = None  # output file path for evaluation result (required)
+    eval_type: Literal["em", "em5", "cm"] = "cm"  # evaluation type for different dataset format
 
     # correctness configs
     compute_correctness: bool = True
@@ -106,11 +114,6 @@ class EvaluationConfig(BaseConfig):
     rejection_flag: str = "I apologize, but I couldn't find an answer"
     rejection_threshold: int = 85
     autoais_model: str = "google/t5_xxl_true_nli_mixture"
-    
-    def _generate_path(self, base_dir: str, file_name: str) -> str:
-        path = Path(base_dir)
-        path.mkdir(parents=True, exist_ok=True)
-        return str(path / file_name)
     
     def __post_init__(self):
         """
@@ -129,5 +132,5 @@ class EvaluationConfig(BaseConfig):
                 setattr(self, key, value)
         logger.debug("self.eval_type: %s", self.eval_type)
 
-        self.output_path = self.output_path or self._generate_path("results", f"{self.eval_type}_evaluation.json")
-        self.eval_file = self.eval_file or self._generate_path("output", f"{self.data_type}_eval_top100_calibrated.json")
+        self.eval_file = self.eval_file or self._generate_path(dir="eval_data", file_name=f"{self.data_type}_eval_top100_calibrated.json")
+        self.result_path = self.result_path or self._generate_path(dir="results", file_name=f"{self.eval_type}_evaluation.json")

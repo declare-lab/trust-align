@@ -166,3 +166,5 @@ results/
 *.pkl
 *.tsv
 log/
+dist/
+docs/data

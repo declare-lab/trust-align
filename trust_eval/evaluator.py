@@ -5,6 +5,7 @@ import json
 
 import numpy as np
 import scipy.stats as stats
+import torch.distributed as dist
 from fuzzywuzzy import fuzz
 from tqdm import tqdm
 
@@ -31,7 +32,7 @@ class Evaluator:
             
         """
         self.config = config
-        self.output_path = self.config.output_path
+        self.result_path = self.config.result_path
         
         self.rejection_flag = config.rejection_flag
         self.rejection_threshold = config.rejection_threshold
@@ -165,18 +166,21 @@ class Evaluator:
             self.result = compute_trust_score(self.result, self.config)
             
         logger.info(f"{self.result}")
+
+        dist.destroy_process_group()
+
         return self.result
 
-    def save_results(self, output_path: str = None):
+    def save_results(self, result_path: str = None):
         """
         Save evaluation results to a JSON file.
 
         Args:
             results (dict): Evaluation results.
-            output_path (str): Path to save the JSON file.
+            result_path (str): Path to save the JSON file.
         """
-        if output_path is not None:
-            self.output_path = output_path
+        if result_path is not None:
+            self.result_path = result_path
 
-        with open(self.output_path, "w") as f:
+        with open(self.result_path, "w") as f:
             json.dump(self.result, f, indent=4)

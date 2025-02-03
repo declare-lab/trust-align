@@ -11,6 +11,7 @@ from tqdm import tqdm
 from .config import ResponseGeneratorConfig
 from .llm import LLM
 from .logging_config import logger
+from .post_hoc_cite import post_hoc_cite
 from .utils import make_demo
 
 
@@ -21,8 +22,8 @@ class ResponseGenerator:
         self.max_length = self._set_max_length(config.model, config.max_length)
         logger.info(f"Set the model max length to {self.max_length}")
         self.prompt_file = self.config.prompt_file
-        self.eval_file = self.config.eval_file
-        self.output_path = self.config.output_path
+        self.data_file = self.config.data_file
+        self.output_path = self.config.eval_file
         self.load_data()
 
     def _set_max_length(self, model_name: str, max_len: int) -> int:
@@ -41,14 +42,14 @@ class ResponseGenerator:
             return 4096
         return 2048  # Default fallback
 
-    def load_data(self, prompt_file: str = None, eval_file: str = None):
+    def load_data(self, prompt_file: str = None, data_file: str = None):
         """Load prompt and evaluation data from JSON files."""
         if prompt_file is not None:
             self.prompt_data = json.load(open(prompt_file))
-        if eval_file is not None:
-            self.eval_data = json.load(open(eval_file))
+        if data_file is not None:
+            self.eval_data = json.load(open(data_file))
         self.prompt_data = json.load(open(self.prompt_file))
-        self.eval_data = json.load(open(self.eval_file))[:10]
+        self.eval_data = json.load(open(self.data_file))[:10]
 
     def generate_responses(self, data = None):
         """Generate responses for evaluation data."""
@@ -104,6 +105,9 @@ class ResponseGenerator:
             for idx, item in enumerate(tqdm(data)):
                 prompt = item['prompt']
                 item['output'] = self.generate_response_single_query(prompt)
+        
+        if self.config.posthoc:
+            data = post_hoc_cite(data, self.config)
 
         self.eval_data = data
         return data
