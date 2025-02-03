@@ -1,0 +1,16 @@
+# Generator
+model: Qwen/Qwen2.5-3B-Instruct
+data_type: "eli5"
+prompt_file: prompts/eli5_rejection.json
+data_file: data/eli5_eval_top100_calibrated.json
+ndoc: 5
+no_demo: True
+vllm: True
+temperature: 0.1
+top_p: 0.95
+max_length: 8192
+
+# Evaluator
+eval_type: cm
+eval_file: eval_data/eli5_rejection_trustalign.json
+result_path: results/eli5_rejection_trustalign.json

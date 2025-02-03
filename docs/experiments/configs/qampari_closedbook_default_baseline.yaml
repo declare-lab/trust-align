@@ -1,0 +1,20 @@
+# Generator
+model: Qwen/Qwen2.5-3B-Instruct
+data_type: "qampari"
+prompt_file: prompts/qampari_closedbook_default.json
+data_file: data/qampari_eval_top100_calibrated.json
+ndoc: 5
+no_demo: True
+vllm: True
+temperature: 0.5
+top_p: 0.95
+max_length: 8192
+
+posthoc: True
+posthoc_retriever: nli
+external_docs: data/qampari_eval_top100_calibrated.json
+
+# Evaluator
+eval_type: em5
+eval_file: eval_data/qampari_closedbook_default_baseline.json
+result_path: results/qampari_closedbook_default_baseline.json
