@@ -1,0 +1,16 @@
+# Generator
+model: Qwen/Qwen2.5-3B-Instruct
+data_type: "asqa"
+prompt_file: prompts/asqa_rejection.json
+data_file: data/asqa_eval_top100_calibrated.json
+ndoc: 5
+openai_api: True
+azure: True
+temperature: 0.5
+top_p: 0.95
+max_length: 8192
+
+# Evaluator
+eval_type: em
+eval_file: eval_data/asqa_openai.json
+result_path: results/asqa_openai.json
