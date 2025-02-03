@@ -12,7 +12,7 @@ exclude = ["demo"]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
-vllm = "^0.7.0"
+vllm = "^0.6.6.post1"
 peft = "^0.14.0"
 fuzzywuzzy = "^0.18.0"
 python-levenshtein = "^0.26.1"
