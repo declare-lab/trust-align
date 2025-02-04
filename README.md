@@ -1,8 +1,10 @@
 # Measuring and Enhancing Trustworthiness of LLMs in RAG through Grounded Attributions and Learning to Refuse
 
-> 📣 We have open-sourced the Trust-Aligned models [here](https://huggingface.co/collections/declare-lab/trust-align-679491760dd03cc5f4d479e6)!
+> 📣 4/2/25: We have updated our repo structure to hopefully be more user friendly!
 
-> 📣 This paper has been accepted to ICLR 2025!
+> 📣 31/1/25: We have open-sourced the Trust-Aligned models [here](https://huggingface.co/collections/declare-lab/trust-align-679491760dd03cc5f4d479e6)!
+
+> 📣 22/1/25: This paper has been accepted to ICLR 2025!
 
 This repository contains the original implementation of [Measuring and Enhancing Trustworthiness of LLMs in RAG through Grounded Attributions and Learning to Refuse](https://arxiv.org/abs/2409.11242) (accepted at ICLR 2025). There are two parts to this repository:
 

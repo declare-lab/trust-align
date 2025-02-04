@@ -54,7 +54,7 @@ class ResponseGenerator:
             self.eval_data = json.load(open(data_file))
         else:
             assert self.data_file is not None
-            self.eval_data = json.load(open(self.data_file))[:10]
+            self.eval_data = json.load(open(self.data_file))
 
     def generate_responses(self, data: Optional[List[Dict[str, Any]]] = None) -> List[Dict[str, Any]]:
         """Generate responses for evaluation data."""
