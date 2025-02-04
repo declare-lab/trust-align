@@ -1,0 +1,13 @@
+,Coverage Only,Citation Recall Only,Citation Precision Only,Coverage & Citation Recall,Coverage & Citation Precision,Citation Recall & Citation Precision,All Three,Rejection Recall,Rejection Precision,No Error,Rows,Model
+Coverage and Citation Errors,6.666666666666667,3.3333333333333335,0.0,6.666666666666667,0.0,13.333333333333334,16.666666666666664,0.0,0.0,0.0,Coverage and Citation Errors,claude
+Rejection Recall,0.0,0.0,0.0,0.0,0.0,0.0,0.0,23.333333333333332,0.0,0.0,Rejection Recall,claude
+Rejection Precision,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,3.3333333333333335,0.0,Rejection Precision,claude
+No Error,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,26.666666666666668,No Error,claude
+Coverage and Citation Errors,13.333333333333334,0.0,1.6666666666666667,0.0,3.3333333333333335,6.666666666666667,13.333333333333334,0.0,0.0,0.0,Coverage and Citation Errors,gpt
+Rejection Recall,0.0,0.0,0.0,0.0,0.0,0.0,0.0,25.0,0.0,0.0,Rejection Recall,gpt
+Rejection Precision,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,3.3333333333333335,0.0,Rejection Precision,gpt
+No Error,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,33.33333333333333,No Error,gpt
+Coverage and Citation Errors,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,Coverage and Citation Errors,llama
+Rejection Recall,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,Rejection Recall,llama
+Rejection Precision,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,50.0,0.0,Rejection Precision,llama
+No Error,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,50.0,No Error,llama

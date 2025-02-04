@@ -1,0 +1,69 @@
+[tool.poetry]
+name = "trust_eval"
+version = "0.1.2"
+description = "Metric to measure RAG responses with inline citations"
+authors = ["Shang Hong Sim <simshanghong@gmail.com>"]
+license = "CC BY-NC 4.0"
+readme = "README.md"
+homepage = "https://github.com/shanghongsim/trust-eval"
+repository = "https://github.com/shanghongsim/trust-eval"
+keywords = ["RAG", "evaluation", "metrics", "citation"]
+exclude = ["demo"]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.12"
+vllm = "^0.6.6.post1"
+peft = "^0.14.0"
+fuzzywuzzy = "^0.18.0"
+python-levenshtein = "^0.26.1"
+scipy = "^1.14.1"
+colorlog = "^6.9.0"
+nltk = "^3.9.1"
+py3nvml = "^0.2.7"
+sentence-transformers = "^3.4.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
+codespell = "^2.4.1"
+toml = "^0.10.2"
+ipython = "^8.32.0"
+jupyter = "^1.1.1"
+mypy = "^1.14.1"
+pre-commit = "^4.1.0"
+pylint = "^3.3.4"
+pytest = "^8.3.4"
+pytest-mock = "^3.14.0"
+ruff = "^0.9.4"
+tree-sitter-languages = "^1.10.2"
+types-deprecated = "^1.2.15.20241117"
+types-protobuf = "^5.29.1.20241207"
+types-pyyaml = "^6.0.12.20241230"
+types-redis = "^4.6.0.20241004"
+types-requests = "^2.32.0.20241016"
+types-setuptools = "^75.8.0.20250110"
+
+[tool.codespell]
+check-filenames = true
+check-hidden = true
+skip = ".git,*.lock,*.pkl,*.tsv,*.csv,*.html,*.json,*.jsonl,*.pdf,*.txt,*.ipynb"
+ignore-words = ["ans"]
+
+[tool.mypy]
+disallow_untyped_defs = true
+exclude = ["_static", "build", "examples", "notebooks", "venv"]
+ignore_missing_imports = true
+python_version = "3.10"
+
+[tool.tomlsort]
+all = true
+in_place = true
+spaces_before_inline_comment = 2  # Match Python PEP 8
+spaces_indent_inline_array = 4  # Match Python PEP 8
+trailing_comma_inline_array = true
+
+[tool.tomlsort.overrides."tool.poetry.dependencies"]
+table_keys = false
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

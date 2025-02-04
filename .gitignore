@@ -167,4 +167,6 @@ results/
 *.tsv
 log/
 dist/
-docs/data
+data/
+wandb/
+dev/
