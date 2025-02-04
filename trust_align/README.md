@@ -16,8 +16,6 @@ cd ./alignment-handbook/
 python -m pip install .
 ```
 
-<img src="assets/trust_align.png" alt="Trust-Align" width="100%">
-
 ## Training
 
 Our training code is based on the [alignment-handbook repository](https://github.com/huggingface/alignment-handbook). We provide the complete training code and configuration files for both SFT and DPO. To get started, you'll need to customize the `model_name_or_path` and `output_dir` settings, and adjust the `num_processes` and `per_device_train_batch_size` parameters in the `.yaml` configuration files according to your computational environment. For specifying the training dataset, use `dataset_mixer` to point to your dataset, ensuring it is in the [Hugging Face dataset format](https://huggingface.co/docs/datasets/en/create_dataset).
@@ -41,6 +39,8 @@ sh dpo.sh
 > A note on choosing checkpoint: For both SFT and DPO, I choose the checkpoint where I observe convergence in both eval_loss and perplexity. This is for cases where there is clear convergence. When its a bit more noisy (common for DPO), there is usually a minimum before it becomes noisy. If the minimum is reasonably far in (about halfway or more), I choose that checkpoint. If not, I choose the next minimum in an area that looks less unstable.
 
 ## Data Creation
+
+<img src="../assets/trust_align.png" alt="Trust-Align" width="100%">
 
 ### Preparation
 
