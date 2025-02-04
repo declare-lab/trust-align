@@ -20,7 +20,7 @@ truncation_side: "left"
 dataset_text_field: messages
 packing: false
 eval_packing: false
-output_dir: /mnt/data1/shanghong/shared_models # change this
+output_dir: /mnt/data1/shanghong/shared_models/test # change this
 num_train_epochs: 2
 max_steps: -1
 bf16: true
@@ -46,7 +46,7 @@ logging_strategy: steps
 max_seq_length: 2048
 overwrite_output_dir: true
 remove_unused_columns: true
-run_name: llama2-7b-sft # modelname-size-sft/dpo convention
+run_name: test # modelname-size-sft/dpo convention
 report_to:
   - "wandb"
 save_strategy: "steps"

@@ -1,5 +1,5 @@
 {
-    "instruction": "Instruction: Provide a list of accurate answers for the given question. Separate answers by commas. For questions that have more than 5 answers, write at least 5 answers. If you are unable to provide an answer, only respond with \"I apologize, but I couldn't find an answer to your question.\".",
+    "instruction": "Instruction: Provide a list of accurate answers for the given question. Separate answers by commas. For questions that have more than 5 answers, write at least 5 answers. If you are unable to provide an answer, only respond with \"I apologize, but I couldn't find an answer to your question.\". Do not add further explanation as to why an answer cannot be provided, just state the response above as-is.",
     "demo_sep": "\n\n\n",
     "demo_prompt": "{INST}\n\nQuestion: {Q}\n\nAnswer: {A}",
     "doc_prompt": "Document [{ID}](Title: {T}): {P}\n",

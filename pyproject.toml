@@ -11,7 +11,7 @@ keywords = ["RAG", "evaluation", "metrics", "citation"]
 exclude = ["demo"]
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.12"
+python = ">=3.10.9,<3.12"
 
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"
