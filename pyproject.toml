@@ -12,15 +12,6 @@ exclude = ["demo"]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
-vllm = "^0.6.6.post1"
-peft = "^0.14.0"
-fuzzywuzzy = "^0.18.0"
-python-levenshtein = "^0.26.1"
-scipy = "^1.14.1"
-colorlog = "^6.9.0"
-nltk = "^3.9.1"
-py3nvml = "^0.2.7"
-sentence-transformers = "^3.4.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"
