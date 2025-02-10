@@ -1,5 +1,5 @@
 # Generator
-model: Qwen/Qwen2.5-3B-Instruct
+model: meta-llama/Llama-3.2-3B-Instruct
 data_type: "asqa"
 prompt_file: prompts/asqa_rejection.json
 data_file: data/asqa_eval_top100_calibrated.json

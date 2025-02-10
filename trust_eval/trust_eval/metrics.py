@@ -98,7 +98,7 @@ def compute_exact_match(data: List[Dict[str, Any]], args: Any, calib: bool=False
     acc = []
 
     for item in tqdm(data):
-        acc.append(_compute_exact_match_single_query(item, args, calib=False, parametric=False))
+        acc.append(_compute_exact_match_single_query(item, args, calib=calib, parametric=parametric))
     return float(100 * np.mean(acc))
 
 def get_all_em_scores(data: List[Dict], normalized_data: List[Dict], normalized_answered_data: List[Dict], normalized_answerable_data: List[Dict], args: Any) -> Dict[str, Any]:

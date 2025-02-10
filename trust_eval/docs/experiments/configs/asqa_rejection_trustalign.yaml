@@ -1,5 +1,5 @@
 # Generator
-model: Qwen/Qwen2.5-3B-Instruct
+model: /mnt/data1/shanghong/shared_models/trustalign_llama3_8b/
 data_type: "asqa"
 prompt_file: prompts/asqa_rejection.json
 data_file: data/asqa_eval_top100_calibrated.json
@@ -12,5 +12,5 @@ max_length: 8192
 
 # Evaluator
 eval_type: em
-eval_file: eval_data/asqa_rejection_trustalign.json
-result_path: results/asqa_rejection_trustalign.json
+eval_file: eval_data/asqa_rejection_trustalign_llama3_8b.json
+result_path: results/asqa_rejection_trustalign_llama3_8b.json
