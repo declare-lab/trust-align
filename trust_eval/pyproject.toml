@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "trust_eval"
-version = "0.1.4"
+version = "0.1.5"
 description = "Metric to measure RAG responses with inline citations"
 authors = ["Shang Hong Sim <simshanghong@gmail.com>"]
 license = "CC BY-NC 4.0"

@@ -1,6 +1,6 @@
 # trust_eval/__init__.py
 
-__version__ = "0.1.4"
+__version__ = "0.1.5"
 __author__ = "Shang Hong Sim"
 
 from .auto_ais_loader import (
