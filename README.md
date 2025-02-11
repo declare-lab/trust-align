@@ -1,4 +1,4 @@
-# Measuring and Enhancing Trustworthiness of LLMs in RAG through Grounded Attributions and Learning to Refuse
+# Measuring and Enhancing Trustworthiness of LLMs in RAG through Grounded Attributions and Learning to Refuse (ICLR 2025, Oral, top 1.8%)
 
 > 📣 4/2/25: We have updated our repo structure to hopefully be more user friendly!
 
