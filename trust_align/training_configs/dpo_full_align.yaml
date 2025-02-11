@@ -1,12 +1,12 @@
 # Model arguments
-model_name_or_path: 'your_dir'
+model_name_or_path: /mnt/data1/shanghong/shared_models/trustalign_llama3_8b_sft/checkpoint-120
 torch_dtype: bfloat16
 trust_remote_code: True
 attn_implementation: flash_attention_2  #sdpa
 
 # Data training arguments
 dataset_mixer:
-  "Align_Cited_Text": 1.0
+  "/home/shanghong/work/trust-align/data/Align_Cited_Text_B": 1.0
 dataset_splits:
   - train
   - test
@@ -14,13 +14,13 @@ preprocessing_num_workers: 1
 truncation_side: "left"
 
 # DPOTrainer arguments
-output_dir: 'your_dir'
+output_dir: /mnt/data1/shanghong/shared_models/trustalign_llama3_8b
 num_train_epochs: 2
 bf16: true
 beta: 0.5
-per_device_train_batch_size: 4  # 6 gpus: 4, 5 gpus: 4, 4 gpus: 2
-per_device_eval_batch_size: 4
-gradient_accumulation_steps: 8  # maintain bs*accu=32
+per_device_train_batch_size: 2  # 6 gpus: 4, 5 gpus: 4, 4 gpus: 2
+per_device_eval_batch_size: 2
+gradient_accumulation_steps: 16  # maintain bs*accu=32
 gradient_checkpointing: true
 gradient_checkpointing_kwargs:
   use_reentrant: False
@@ -28,21 +28,20 @@ learning_rate: 5.0e-7
 log_level: info
 logging_steps: 2
 logging_strategy: steps
-optim: adamw_torch_fused  # paged_adamw_8bit  
+optim: paged_adamw_8bit  # adamw_torch_fused
 lr_scheduler_type: cosine
 max_length: 2048
 max_prompt_length: 1600
 overwrite_output_dir: true
 remove_unused_columns: true
 do_eval: true
-# generate_during_eval: true
 eval_strategy: steps
-eval_steps: 10
-run_name: ckpt-dpo-llama2
+eval_steps: 20
+run_name: llama3-8b-dpo # modelname-size-sft/dpo convention
 report_to:
   - wandb
 save_strategy: "steps"
-save_steps: 10
+save_steps: 20
 save_only_model: True
 save_total_limit: 20
 seed: 42

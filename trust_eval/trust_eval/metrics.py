@@ -631,7 +631,7 @@ def get_basic_stats(data: List[Dict], normalized_data: List[Dict], normalized_an
 def compute_trust_score(result: Dict[str, Any], args: Any) -> Dict[str, Any]:
     if args.eval_type == "em":
         result['trust_score'] = np.mean([result['calib_str_em_f1'], result['macro_f1'], result['answered_citation_f1']])
-    elif args.eval_type == "em@5":
+    elif args.eval_type == "em5":
         result['trust_score'] = np.mean([result['calib_qampari_em_f1'], result['macro_f1'], result['answered_citation_f1']])
     elif args.eval_type == "cm":
         result['trust_score'] = np.mean([result['calib_claims_nli_f1'], result['macro_f1'], result['answered_citation_f1']])

@@ -1,6 +1,6 @@
 # Model arguments
 # model_init_kwargs:
-model_name_or_path: meta-llama/Llama-2-7b-chat-hf # change this
+model_name_or_path: meta-llama/Meta-Llama-3-8B-Instruct # change this
 model_revision: main
 torch_dtype: bfloat16
 trust_remote_code: True
@@ -20,16 +20,16 @@ truncation_side: "left"
 dataset_text_field: messages
 packing: false
 eval_packing: false
-output_dir: /mnt/data1/shanghong/shared_models/test # change this
+output_dir: /mnt/data1/shanghong/shared_models/trustalign_llama3_8b_sft # change this
 num_train_epochs: 2
 max_steps: -1
 bf16: true
-per_device_train_batch_size: 8  # Llama2:12, Llama3: 4
-per_device_eval_batch_size: 4  # Llama2:4, Llama3: 1
+per_device_train_batch_size: 2  # Llama2:12, Llama3: 4
+per_device_eval_batch_size: 1  # Llama2:4, Llama3: 1
 gradient_checkpointing: true
 gradient_checkpointing_kwargs:
   use_reentrant: False
-gradient_accumulation_steps: 3
+gradient_accumulation_steps: 18
 max_grad_norm: 1.0
 learning_rate: 2.0e-05
 optim: adamw_torch
@@ -46,13 +46,13 @@ logging_strategy: steps
 max_seq_length: 2048
 overwrite_output_dir: true
 remove_unused_columns: true
-run_name: test # modelname-size-sft/dpo convention
+run_name: llama3-8b-sft # modelname-size-sft/dpo convention
 report_to:
   - "wandb"
 save_strategy: "steps"
 save_steps: 20
 save_only_model: True
-save_total_limit: 10
+save_total_limit: 20
 seed: 42
 metric_for_best_model: 'perplexity'
 greater_is_better: false
