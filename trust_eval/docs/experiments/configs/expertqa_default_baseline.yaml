@@ -4,7 +4,7 @@ data_type: "expertqa"
 prompt_file: prompts/expertqa_default.json
 data_file: data/expertqa_eval_top100_calibrated.json
 ndoc: 5
-no_demo: True
+no_demo: False
 vllm: True
 temperature: 0.5
 top_p: 0.95
