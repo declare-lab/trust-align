@@ -1,7 +1,7 @@
 # Generator
 model: Qwen/Qwen2.5-3B-Instruct
 data_type: "qampari"
-prompt_file: prompts/qampari_closedbook_rejection.json
+prompt_file: prompts/qampari_closedbook_refusal.json
 data_file: data/qampari_eval_top100_calibrated.json
 ndoc: 5
 no_demo: True
@@ -16,5 +16,5 @@ external_docs: data/qampari_eval_top100_calibrated.json
 
 # Evaluator
 eval_type: em5
-eval_file: eval_data/qampari_closedbook_rejection_baseline.json
-result_path: results/qampari_closedbook_rejection_baseline.json
+eval_file: eval_data/qampari_closedbook_refusal_baseline.json
+result_path: results/qampari_closedbook_refusal_baseline.json

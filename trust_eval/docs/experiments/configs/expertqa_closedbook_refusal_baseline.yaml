@@ -1,7 +1,7 @@
 # Generator
 model: Qwen/Qwen2.5-3B-Instruct
 data_type: "expertqa"
-prompt_file: prompts/expertqa_closedbook_rejection.json
+prompt_file: prompts/expertqa_closedbook_refusal.json
 data_file: data/expertqa_eval_top100_calibrated.json
 ndoc: 5
 no_demo: True
@@ -16,5 +16,5 @@ external_docs: data/expertqa_eval_top100_calibrated.json
 
 # Evaluator
 eval_type: cm
-eval_file: eval_data/expertqa_closedbook_rejection_baseline.json
-result_path: results/expertqa_closedbook_rejection_baseline.json
+eval_file: eval_data/expertqa_closedbook_refusal_baseline.json
+result_path: results/expertqa_closedbook_refusal_baseline.json

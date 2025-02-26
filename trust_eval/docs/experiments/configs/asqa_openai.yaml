@@ -1,7 +1,7 @@
 # Generator
 model: Qwen/Qwen2.5-3B-Instruct
 data_type: "asqa"
-prompt_file: prompts/asqa_rejection.json
+prompt_file: prompts/asqa_refusal.json
 data_file: data/asqa_eval_top100_calibrated.json
 ndoc: 5
 openai_api: True

@@ -13,6 +13,8 @@ from tqdm import tqdm
 from .config import EvaluationConfig
 from .logging_config import logger
 from .metrics import (
+    _is_answerable,
+    _is_refusal,
     compute_trust_score,
     get_all_cm_scores,
     get_all_em5_scores,
@@ -35,8 +37,8 @@ class Evaluator:
         self.config = config
         self.result_path = self.config.result_path
         
-        self.rejection_flag = config.rejection_flag
-        self.rejection_threshold = config.rejection_threshold
+        self.refusal_flag = config.refusal_flag
+        self.refusal_threshold = config.refusal_threshold
 
         self.eval_type = config.eval_type
         self.eval_data = self.load_data()
@@ -72,10 +74,8 @@ class Evaluator:
         """
         answered_data = []
         for item in data:
-            rejection = fuzz.partial_ratio(
-                normalize_answer(self.rejection_flag), normalize_answer(item["output"])
-            ) > self.rejection_threshold
-            if not rejection:
+            refusal = _is_refusal(item, self.config)
+            if not refusal:
                 answered_data.append(copy.deepcopy(item))
         return answered_data
 
@@ -91,9 +91,7 @@ class Evaluator:
         """
         answerable_data = []
         for item in data:
-            answerable = any(
-                np.bitwise_or.reduce([doc["answers_found"] for doc in item["docs"]])
-            )
+            answerable = _is_answerable(np.bitwise_or.reduce([doc["answers_found"] for doc in item["docs"]]))
             if answerable:
                 answerable_data.append(copy.deepcopy(item))
         return answerable_data

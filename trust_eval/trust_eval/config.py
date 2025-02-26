@@ -50,7 +50,7 @@ class ResponseGeneratorConfig(BaseConfig):
     fewer_doc_in_demo: bool = False  # Whether to use fewer documents in demo
     ndoc_in_demo: Optional[int] = None  # Number of documents in demo when using fewer docs
     no_demo: bool = False  # Whether to disable demos; same effect as shot=0
-    rejection: bool = True  # Whether to use rejection demos
+    refusal: bool = True  # Whether to use refusal demos
 
     # Model and naming
     openai_api: bool = False  # Whether to use OpenAI API
@@ -65,8 +65,8 @@ class ResponseGeneratorConfig(BaseConfig):
     max_length: int = 2048  # Maximum length for model input
     num_samples: int = 1  # Number of samples for multiple answers
 
-    rejection_flag: str = "I apologize, but I couldn't find an answer"
-    rejection_threshold: int = 85
+    refusal_flag: str = "I apologize, but I couldn't find an answer"
+    refusal_threshold: int = 85
     autoais_model: str = "google/t5_xxl_true_nli_mixture"
 
     # Posthoc settings
@@ -87,8 +87,8 @@ class ResponseGeneratorConfig(BaseConfig):
         
         if self.prompt_file is None:
             closedbook = "_closedbook" if self.ndoc == 0 else ""
-            rejection = "_default" if not self.rejection else "_rejection"
-            file_name = f"{self.data_type}{closedbook}{rejection}.json"
+            refusal = "_default" if not self.refusal else "_refusal"
+            file_name = f"{self.data_type}{closedbook}{refusal}.json"
             self.prompt_file = self._generate_path(dir="prompts", file_name=file_name)
 
 
@@ -112,8 +112,8 @@ class EvaluationConfig(BaseConfig):
     at_most_citations: int = 3  # Maximum number of documents for citation evaluation
     calib: bool = True
 
-    rejection_flag: str = "I apologize, but I couldn't find an answer"
-    rejection_threshold: int = 85
+    refusal_flag: str = "I apologize, but I couldn't find an answer"
+    refusal_threshold: int = 85
     autoais_model: str = "google/t5_xxl_true_nli_mixture"
     
     def __post_init__(self) -> None:

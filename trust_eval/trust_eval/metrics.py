@@ -9,7 +9,6 @@ import torch
 from fuzzywuzzy import fuzz
 from nltk import sent_tokenize
 from tqdm import tqdm
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
 from .auto_ais_loader import get_autoais_model_and_tokenizer
 from .logging_config import logger
@@ -33,13 +32,13 @@ def _is_answerable(supported_claims: np.ndarray) -> bool:
     return any(supported_claims)
 
 def _is_refusal(item: Dict[str, Any], args: Any) -> bool:
-    return not fuzz.partial_ratio(normalize_answer(args.rejection_flag), normalize_answer(item['output'])) > args.rejection_threshold
+    return fuzz.partial_ratio(normalize_answer(args.refusal_flag), normalize_answer(item['output'])) > args.refusal_threshold
 
 def _compute_exact_match_single_query(item: Dict[str, Any], args: Any, calib: bool=False, parametric: bool=False) -> float:
     loc_acc = []
     if calib:
         supported_claims = np.bitwise_or.reduce([doc["answers_found"] for doc in item['docs']]).tolist()
-        if _is_answerable(supported_claims) and _is_refusal(item, args):
+        if _is_answerable(supported_claims) and not _is_refusal(item, args):
             for idx, ans_list in enumerate(item['answers']):
                 # ignore gold answers that are not supported by given docs
                 if supported_claims[idx] == 1:
@@ -119,8 +118,6 @@ def get_all_em_scores(data: List[Dict], normalized_data: List[Dict], normalized_
 
 
 def compute_claim_match(data: List[Dict[str, Any]], args: Any, calib: bool=False, parametric: bool=False) -> Dict[str, Any]:
-    
-    autoais_model, autoais_tokenizer = get_autoais_model_and_tokenizer(args)
     logger.info("Computing claims...")
 
     regular_scores = []
@@ -131,7 +128,7 @@ def compute_claim_match(data: List[Dict[str, Any]], args: Any, calib: bool=False
         calib_answerable_scores = []
         if parametric:
             parametric_answered_scores = []
-    for item in tqdm(data):
+    for item in tqdm(data, desc="Computing claim match score"):
         normalized_output = remove_citations(item['output'])
         entail = 0
         claims = [claim_list[0] for claim_list in item["answers"]]
@@ -149,14 +146,15 @@ def compute_claim_match(data: List[Dict[str, Any]], args: Any, calib: bool=False
                     calib_entail += ais_score
         
         # answered/answerable condition
-        rejection = fuzz.partial_ratio(normalize_answer(args.rejection_flag), normalize_answer(item['output'])) > args.rejection_threshold
+        refusal = _is_refusal(item, args)
+        answerable = _is_answerable(supported_claims)
 
-        if not rejection:
+        if not refusal:
             answered_scores.append(entail / len(claims))
 
         if calib:
-            if not rejection:    
-                if any(supported_claims):
+            if not refusal:    
+                if answerable:
                     calib_answered_scores.append(calib_entail / sum(supported_claims))
                     if parametric:
                         parametric_answered_scores.append(calib_entail / len(supported_claims))
@@ -165,8 +163,8 @@ def compute_claim_match(data: List[Dict[str, Any]], args: Any, calib: bool=False
                     if parametric:
                         parametric_answered_scores.append(0)
             
-            if any(supported_claims):
-                if not rejection:
+            if answerable:
+                if not refusal:
                     calib_answerable_scores.append(calib_entail / sum(supported_claims))
                 else:
                     calib_answerable_scores.append(0)            
@@ -220,7 +218,7 @@ def compute_qampari_f1(data: List[Dict[str, Any]], args: Any, cot: bool=False, p
     f1_top5: List[float] = []
 
     num_preds = []
-    for item in tqdm(data):
+    for item in tqdm(data, desc="Computing EM5 score"):
         if cot:
             if ":" in item['output']:
                 o = ':'.join(item['output'].split(":")[1:]) # try to separate the COT part and the answer list part.
@@ -235,7 +233,7 @@ def compute_qampari_f1(data: List[Dict[str, Any]], args: Any, cot: bool=False, p
         if calib:
             # at least answerable
             supported_claims = np.bitwise_or.reduce([doc["answers_found"] for doc in item['docs']]).tolist()
-            if any(supported_claims) and (not fuzz.partial_ratio(normalize_answer(args.rejection_flag), normalize_answer(item['output'])) > args.rejection_threshold):
+            if _is_answerable(supported_claims) and (not _is_refusal(item, args)):
                 # ignore golden answers that are not recalled by given docs
                 answers = [[normalize_answer(x) for x in ans] for i, ans in enumerate(item['answers']) if supported_claims[i] == 1]
             else:
@@ -303,7 +301,7 @@ def compute_citation_metrics(data: List[Dict[str, Any]],
         decontext: decontextualize the output
     """
 
-    logger.info(f"Running AutoAIS...")
+    logger.info("Running AutoAIS...")
 
     regular_ais_scores = []
     regular_ais_scores_prec = []
@@ -315,7 +313,7 @@ def compute_citation_metrics(data: List[Dict[str, Any]],
     sent_mcite_support = 0
     sent_mcite_overcite = 0
     autoais_log = []
-    for item in tqdm(data):
+    for item in tqdm(data, desc="Computing citation score"):
         # Get sentences by using NLTK
         if is_qampari:
             sents = [item['question'] + " " + x.strip() for x in item['output'].rstrip().rstrip(".").rstrip(",").split(",")]
@@ -323,7 +321,6 @@ def compute_citation_metrics(data: List[Dict[str, Any]],
             sents = sent_tokenize(item['output'])
         if len(sents) == 0:
             continue
-
         target_sents = [remove_citations(sent).strip() for sent in sents]
         
         entail = 0
@@ -336,11 +333,12 @@ def compute_citation_metrics(data: List[Dict[str, Any]],
             # Find references
             ref = [int(r[1:])-1 for r in re.findall(r"\[\d+", sent)] # In text citation id starts from 1
             logger.info(f"For `{sent}`, find citations {ref}")
+            
+            # No citations
             if len(ref) == 0:
-                # No citations
                 joint_entail = 0
+            # Citations out of range
             elif any([ref_id >= len(item['docs']) for ref_id in ref]):
-                # Citations out of range
                 joint_entail = 0
             else:
                 if at_most_citations is not None:
@@ -395,17 +393,18 @@ def compute_citation_metrics(data: List[Dict[str, Any]],
                     else:
                         entail_prec += 1
             else:
-                entail_prec += joint_entail 
+                entail_prec += joint_entail
+            logger.info(f"Prec: {entail_prec}, rec: {joint_entail}")
 
         sent_total += len(sents)
         regular_ais_scores.append(entail / len(sents))
-        regular_ais_scores_prec.append(entail_prec / total_citations if total_citations > 0 else 0) # len(sents))
+        regular_ais_scores_prec.append(entail_prec / total_citations if total_citations > 0 else 0) # len(sents)
 
         # answered data
-        rejection = fuzz.partial_ratio(normalize_answer(args.rejection_flag), normalize_answer(item['output'])) > args.rejection_threshold
-        if not rejection:
+        refusal = _is_refusal(item, args)
+        if not refusal:
             answered_ais_scores.append(entail / len(sents))
-            answered_ais_scores_prec.append(entail_prec / total_citations if total_citations > 0 else 0) # len(sents))
+            answered_ais_scores_prec.append(entail_prec / total_citations if total_citations > 0 else 0) # len(sents)
 
     if sent_mcite > 0 and sent_mcite_support > 0:
         print("Among all sentences, %.2f%% have multiple citations, among which %.2f%% are supported by the joint set, among which %.2f%% overcite." % (
@@ -450,17 +449,18 @@ def compute_macro_metrics(data: List[Dict[str, Any]], args: Any) -> Dict[str, An
     ans_prec = 0
     
     for item in data:
-        answerable = any(np.bitwise_or.reduce([doc["answers_found"] for doc in item['docs']]))
-        rejection = fuzz.partial_ratio(normalize_answer(args.rejection_flag), normalize_answer(item['output'])) > args.rejection_threshold
+        supported_claims = np.bitwise_or.reduce([doc["answers_found"] for doc in item['docs']]).tolist()
+        answerable = _is_answerable(supported_claims)
+        refusal = _is_refusal(item, args)
         
-        # Rejection recall
+        # Refusal recall
         if not answerable:
             reject_rec_num += 1
-            if rejection:
+            if refusal:
                 reject_rec += 1
         
-        # Rejection precision
-        if rejection:
+        # Refusal precision
+        if refusal:
             reject_prec_num += 1
             if not answerable:
                 reject_prec += 1
@@ -468,11 +468,11 @@ def compute_macro_metrics(data: List[Dict[str, Any]], args: Any) -> Dict[str, An
         # Answerable recall
         if answerable:
             ans_rec_num += 1
-            if not rejection:
+            if not refusal:
                 ans_rec += 1
 
         # Answerable precision
-        if not rejection:
+        if not refusal:
             ans_prec_num += 1
             if answerable:
                 ans_prec += 1
@@ -591,7 +591,6 @@ def _compute_f1(a_gold: str, a_pred: str) -> float:
 
 def _compute_exact(a_gold: str, a_pred: str) -> int:
     """Check whether two strings are equal up to normalization."""
-
     return int(normalize_answer(a_gold) == normalize_answer(a_pred))
 
 

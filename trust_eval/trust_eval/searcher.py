@@ -49,7 +49,7 @@ class SearcherWithinDocs:
         elif "nli" in self.retriever:
             claim = query
             score = np.array([self.get_entailment_score(format_document(doc), claim) for doc in self.docs])
-            print(f'{score=}')
+            # print(f'{score=}')
             best_doc_id = np.argmax(score)
             # print(f'{best_doc_id=}')
         else:

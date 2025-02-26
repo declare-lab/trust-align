@@ -1,10 +1,10 @@
 # Generator
-model: Qwen/Qwen2.5-3B-Instruct
+model: Qwen/Qwen2.5-7B-Instruct
 data_type: "asqa"
-prompt_file: prompts/asqa_closedbook_rejection.json
+prompt_file: prompts/asqa_closedbook_refusal.json
 data_file: data/asqa_eval_top100_calibrated.json
 ndoc: 5
-no_demo: True
+no_demo: False
 vllm: True
 temperature: 0.5
 top_p: 0.95
@@ -16,5 +16,5 @@ external_docs: data/asqa_eval_top100_calibrated.json
 
 # Evaluator
 eval_type: em
-eval_file: eval_data/asqa_closedbook_rejection_baseline.json
-result_path: results/asqa_closedbook_rejection_baseline.json
+eval_file: eval_data/asqa_closedbook_refusal_baseline_7b_test2.json
+result_path: results/asqa_closedbook_refusal_baseline_7b_test2.json

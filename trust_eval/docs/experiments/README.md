@@ -24,13 +24,13 @@ CUDA_VISIBLE_DEVICES=0 python main.py
 
 Some additional notes:
 
-- **ICL**: XXX_rejection_baseline.yaml
-- **PostCite/PostAtrr**: XXX_closedbook_rejection_baseline.yaml
+- **ICL**: XXX_refusal_baseline.yaml
+- **PostCite/PostAtrr**: XXX_closedbook_refusal_baseline.yaml
 - PostCite: set posthoc_retriever = `gtr-t5-large`
 - PostAttr: set posthoc_retriever = `nli`
 - **Self-RAG**: Run inference using pretrained [Self-RAG models](https://selfrag.github.io/) and then evaluate
 - **FRONT**: Train model using [FRONT](https://github.com/LuckyyySTA/Fine-grained-Attribution), run inference on it and then evaluate
-- **Trust-Align**: XXX_rejection_trustalign.yaml
+- **Trust-Align**: XXX_refusal_trustalign.yaml
 
 ### 🚧 Notice: Code Under Maintenance 🚧
 

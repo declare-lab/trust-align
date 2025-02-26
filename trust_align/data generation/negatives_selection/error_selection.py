@@ -1,18 +1,24 @@
 import argparse
-import random
-import numpy as np
 import copy
-from tqdm import tqdm
 import json
 import os
-import colorlog
+import random
 import re
-from fuzzywuzzy import fuzz
 
+import colorlog
+import numpy as np
 import torch
+from fuzzywuzzy import fuzz
 from nltk.tokenize.punkt import PunktParameters, PunktSentenceTokenizer
+from tqdm import tqdm
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, pipeline
-from utils import get_max_memory, normalize_answer, remove_citations, PunktLanguageVars, save_data_to_json
+from utils import (
+    PunktLanguageVars,
+    get_max_memory,
+    normalize_answer,
+    remove_citations,
+    save_data_to_json,
+)
 
 # Set up the Punkt tokenizer with custom abbreviations
 abbreviations = [
@@ -45,21 +51,21 @@ AUTOAIS_MODEL="google/t5_xxl_true_nli_mixture"
 global autoais_model, autoais_tokenizer
 autoais_model, autoais_tokenizer = None, None
 
-REJECTION_FUZZ_THRESHOLD=85
-REJECTION_FLAG="I apologize, but I couldn't find an answer"
+REFUSAL_FUZZ_THRESHOLD=85
+REFUSAL_FLAG="I apologize, but I couldn't find an answer"
 
-# rejection errors
-def is_rejection_prec_error(answer, pattern):
-    rejection = fuzz.partial_ratio(normalize_answer(REJECTION_FLAG), normalize_answer(answer)) > REJECTION_FUZZ_THRESHOLD
+# refusal errors
+def is_refusal_prec_error(answer, pattern):
+    refusal = fuzz.partial_ratio(normalize_answer(REFUSAL_FLAG), normalize_answer(answer)) > REFUSAL_FUZZ_THRESHOLD
     answerable = not(np.all(pattern == 0))
-    if answerable and rejection:
+    if answerable and refusal:
         return True
     return False
 
-def is_rejection_recall_error(answer, pattern):
-    rejection = fuzz.partial_ratio(normalize_answer(REJECTION_FLAG), normalize_answer(answer)) > REJECTION_FUZZ_THRESHOLD
+def is_refusal_recall_error(answer, pattern):
+    refusal = fuzz.partial_ratio(normalize_answer(REFUSAL_FLAG), normalize_answer(answer)) > REFUSAL_FUZZ_THRESHOLD
     answerable = not(np.all(pattern == 0))
-    if not answerable and not rejection:
+    if not answerable and not refusal:
         return True
     return False
 
@@ -67,7 +73,7 @@ def not_invalid_qns(pattern):
     return not np.all(pattern == 0)
 
 def not_reject(answer):
-    return not fuzz.partial_ratio(normalize_answer(REJECTION_FLAG), normalize_answer(answer)) > REJECTION_FUZZ_THRESHOLD
+    return not fuzz.partial_ratio(normalize_answer(REFUSAL_FLAG), normalize_answer(answer)) > REFUSAL_FUZZ_THRESHOLD
 
 # asqa correctness
 def exact_presence(short_answers, context):
@@ -428,8 +434,8 @@ def process_samples(data, dataset_name=None):
     
     labelled_data = []
     samples_to_errors = {}
-    errors_to_samples = {'rejection_precision':0, 
-                         'rejection_recall':0, 
+    errors_to_samples = {'refusal_precision':0, 
+                         'refusal_recall':0, 
                          'coverage':0, 
                          'citation_rec':0, 
                          'citation_prec': 0, 
@@ -451,7 +457,7 @@ def process_samples(data, dataset_name=None):
         normalized_sample = copy.deepcopy(sample['output'])
         length = len(normalized_sample)
 
-        # first check if its a rejection recall or rejection precision error
+        # first check if its a refusal recall or refusal precision error
         if not_invalid_qns(pattern) and not_reject(answer):
             # calculate eval metrics
             # coverage, upvoted_content_labels, downvoted_content_labels
@@ -487,16 +493,16 @@ def process_samples(data, dataset_name=None):
             if error_free_flag:
                 errors_to_samples['no_error'] += 1
         else:
-            if is_rejection_prec_error(answer, pattern):
-                single_sample_to_errors['rejection_precision'] = 0
-                errors_to_samples['rejection_precision'] += 1
+            if is_refusal_prec_error(answer, pattern):
+                single_sample_to_errors['refusal_precision'] = 0
+                errors_to_samples['refusal_precision'] += 1
 
                 sents = sentence_splitter.tokenize(answer)
                 upvoted_content_labels, downvoted_content_labels = [], [[i, sent] for i,sent in enumerate(sents)]
                 upvoted_cite_labels, downvoted_cite_labels = [], []
-            elif is_rejection_recall_error(answer, pattern):
-                single_sample_to_errors['rejection_recall'] = 0
-                errors_to_samples['rejection_recall'] += 1
+            elif is_refusal_recall_error(answer, pattern):
+                single_sample_to_errors['refusal_recall'] = 0
+                errors_to_samples['refusal_recall'] += 1
 
                 sents = sentence_splitter.tokenize(answer)
                 upvoted_content_labels, downvoted_content_labels = [], [[i, sent] for i,sent in enumerate(sents)]
@@ -526,10 +532,10 @@ def process_samples(data, dataset_name=None):
                 labelled_sample['eval_metrics']['coverage'] = coverage_stats
             labelled_sample['eval_metrics']['citation'] = citation
         else:
-            if is_rejection_prec_error(answer, pattern):
-                labelled_sample['eval_metrics']['rejection_precision'] = 0 
-            elif is_rejection_recall_error(answer, pattern):
-                labelled_sample['eval_metrics']['rejection_recall'] = 0 
+            if is_refusal_prec_error(answer, pattern):
+                labelled_sample['eval_metrics']['refusal_precision'] = 0 
+            elif is_refusal_recall_error(answer, pattern):
+                labelled_sample['eval_metrics']['refusal_recall'] = 0 
                 labelled_sample['eval_metrics']['citation'] = citation
         labelled_data.append(labelled_sample)
         

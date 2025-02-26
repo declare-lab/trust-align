@@ -345,8 +345,8 @@ def main():
     
     # Generate the demonstration part
     head_prompt = ""
-    if "rejection" in args.prompt_file:
-        logger.warning("Using rejection head prompts...")
+    if "refusal" in args.prompt_file:
+        logger.warning("Using refusal head prompts...")
         pos_train_ids = np.random.choice(len(prompt_data["positive_demos"]), ceil(args.shot/2), replace=False)
         rej_train_ids = np.random.choice(len(prompt_data["reject_demos"]), args.shot//2, replace=False)
 

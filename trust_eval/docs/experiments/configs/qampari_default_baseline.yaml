@@ -1,5 +1,5 @@
 # Generator
-model: Qwen/Qwen2.5-3B-Instruct
+model: meta-llama/Meta-Llama-3-8B-Instruct
 data_type: "qampari"
 prompt_file: prompts/qampari_default.json
 data_file: data/qampari_eval_top100_calibrated.json
@@ -12,5 +12,5 @@ max_length: 8192
 
 # Evaluator
 eval_type: em5
-eval_file: eval_data/qampari_default_baseline.json
-result_path: results/qampari_default_baseline.json
+eval_file: eval_data/qampari_default_baseline_llama3_8b.json
+result_path: results/qampari_default_baseline_llama3_8b.json
