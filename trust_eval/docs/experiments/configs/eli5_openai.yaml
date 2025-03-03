@@ -1,0 +1,17 @@
+# Generator
+model: GPT4o 
+data_type: "eli5"
+prompt_file: prompts/eli5_refusal.json
+data_file: data/eli5_eval_top100_calibrated.json
+ndoc: 5
+azure_openai_api: True
+temperature: 0.5
+top_p: 0.95
+max_length: 8192
+quick_test: 10
+vllm: False
+
+# Evaluator
+eval_type: cm
+eval_file: eval_data/eli5_openai.json
+result_path: results/eli5_openai.json

@@ -13,7 +13,10 @@ logger = logging.getLogger(__name__)
 _autoais_model = None
 _autoais_tokenizer = None
 
-def get_autoais_model_and_tokenizer(args: Any) -> Tuple[AutoModelForSeq2SeqLM, AutoTokenizer]:
+
+def get_autoais_model_and_tokenizer(
+    args: Any,
+) -> Tuple[AutoModelForSeq2SeqLM, AutoTokenizer]:
     global _autoais_model, _autoais_tokenizer
 
     if _autoais_model is None:
@@ -22,14 +25,13 @@ def get_autoais_model_and_tokenizer(args: Any) -> Tuple[AutoModelForSeq2SeqLM, A
             args.autoais_model,
             torch_dtype=torch.bfloat16,
             max_memory=get_max_memory(),
-            device_map="auto"
+            device_map="auto",
         )
         _autoais_tokenizer = AutoTokenizer.from_pretrained(
-            args.autoais_model,
-            use_fast=False
+            args.autoais_model, use_fast=False
         )
         logger.info("AutoAIS model loaded successfully.")
-    
+
     return _autoais_model, _autoais_tokenizer
 
 

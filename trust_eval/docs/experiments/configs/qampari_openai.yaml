@@ -1,0 +1,17 @@
+# Generator
+model: GPT4o 
+data_type: "qampari"
+prompt_file: prompts/qampari_refusal.json
+data_file: data/qampari_eval_top100_calibrated.json
+ndoc: 5
+azure_openai_api: True
+temperature: 0.5
+top_p: 0.95
+max_length: 8192
+quick_test: 10
+vllm: False
+
+# Evaluator
+eval_type: em5
+eval_file: eval_data/qampari_openai.json
+result_path: results/qampari_openai.json

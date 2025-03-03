@@ -10,9 +10,10 @@ from typing import List
 import numpy as np
 from nltk import sent_tokenize
 
-REJECT_RESPONSES = [
+REFUSE_RESPONSES = [
     "I apologize, but I couldn't find an answer to your question in the search results."
 ]
+
 
 def load_json_files_from_folder(folder_path):
     """
@@ -28,9 +29,9 @@ def load_json_files_from_folder(folder_path):
     asqa_ans, eli5_ans = [], []
     for file_name in os.listdir(folder_path):
         file_path = os.path.join(folder_path, file_name)
-        if file_name.endswith('.json') and "error_instruction" in file_name:
+        if file_name.endswith(".json") and "error_instruction" in file_name:
             print(f"Loading JSON file: {file_path}")
-            with open(file_path, 'r') as file:
+            with open(file_path, "r") as file:
                 file_data = json.load(file)
                 if "asqa" in file_name:
                     asqa.extend(file_data)
@@ -38,15 +39,16 @@ def load_json_files_from_folder(folder_path):
                     eli5.extend(file_data)
                 elif "qampari" in file_name:
                     qampari.extend(file_data)
-        elif file_name.endswith('.jsonl') and "new_answers" in file_name:
+        elif file_name.endswith(".jsonl") and "new_answers" in file_name:
             print(f"Loading JSONL file: {file_path}")
-            with open(file_path, 'r') as file:
+            with open(file_path, "r") as file:
                 file_data = [json.loads(line) for line in file]
                 if "asqa" in file_name:
                     asqa_ans.extend(file_data)
                 elif "eli5" in file_name:
                     eli5_ans.extend(file_data)
     return asqa, eli5, qampari, asqa_ans, eli5_ans
+
 
 def normalize_answer(s: str) -> str:
     """
@@ -58,6 +60,7 @@ def normalize_answer(s: str) -> str:
     Returns:
         str: The normalized string.
     """
+
     def remove_articles(text):
         return re.sub(r"\b(a|an|the)\b", " ", text)
 
@@ -69,13 +72,20 @@ def normalize_answer(s: str) -> str:
 
     return white_space_fix(remove_articles(remove_punctuation(lower(s))))
 
+
 def white_space_fix(text: str) -> str:
     """Fix whitespace issues in a string."""
     return " ".join(text.split())
 
+
 def remove_citations(sentence: str) -> str:
     """Remove citation markers from a sentence."""
-    return re.sub(r"\[\d+", "", re.sub(r" \[\d+", "", sentence)).replace(" |", "").replace("]", "")
+    return (
+        re.sub(r"\[\d+", "", re.sub(r" \[\d+", "", sentence))
+        .replace(" |", "")
+        .replace("]", "")
+    )
+
 
 def insert_reference(sentence: str, references: List[int]) -> str:
     """
@@ -89,16 +99,27 @@ def insert_reference(sentence: str, references: List[int]) -> str:
         str: The sentence with references inserted.
     """
     punctuations = "!.;)"
-    pattern = fr"(.*)([{punctuations}]).*$"
+    pattern = rf"(.*)([{punctuations}]).*$"
     reference_str = "".join(f"[{ref}]" for ref in references)
     matched = re.search(pattern, sentence)
 
     if matched:
-        return matched.group(1).strip(string.punctuation) + " " + reference_str + matched.group(2)
+        return (
+            matched.group(1).strip(string.punctuation)
+            + " "
+            + reference_str
+            + matched.group(2)
+        )
     else:
         return sentence.strip(string.punctuation) + " " + reference_str + "."
 
-def extract_docs(ans_index: set, answers_found_list: List[List[int]], scores: List[float], max_cite: int = 1) -> List[int]:
+
+def extract_docs(
+    ans_index: set,
+    answers_found_list: List[List[int]],
+    scores: List[float],
+    max_cite: int = 1,
+) -> List[int]:
     """
     Extract document indices that cover the answer indices.
 
@@ -111,8 +132,13 @@ def extract_docs(ans_index: set, answers_found_list: List[List[int]], scores: Li
     Returns:
         List[int]: List of document indices.
     """
+
     def calculate_coverage(answers_found, ans_index):
-        coverage = {idx for idx in ans_index if idx < len(answers_found) and answers_found[idx] == 1}
+        coverage = {
+            idx
+            for idx in ans_index
+            if idx < len(answers_found) and answers_found[idx] == 1
+        }
         return coverage
 
     doc_coverage = [
@@ -133,6 +159,7 @@ def extract_docs(ans_index: set, answers_found_list: List[List[int]], scores: Li
             break
     return sorted(cited_docs) if cited_docs else []
 
+
 def process_data(data_list: List[dict], max_cite: int, score_key: str) -> List[dict]:
     """
     Process the dataset to generate positive data examples.
@@ -147,13 +174,15 @@ def process_data(data_list: List[dict], max_cite: int, score_key: str) -> List[d
     """
     positive_data = []
     for item in data_list:
-        if item.get('new_answer'):
-            sents = sent_tokenize(item['new_answer'])
-            union_idx = np.nonzero(np.bitwise_or.reduce([doc['answers_found'] for doc in item['docs']]))[0].tolist()
-            mapper = {str(i+1): union_idx[i] for i in range(len(union_idx))}
+        if item.get("new_answer"):
+            sents = sent_tokenize(item["new_answer"])
+            union_idx = np.nonzero(
+                np.bitwise_or.reduce([doc["answers_found"] for doc in item["docs"]])
+            )[0].tolist()
+            mapper = {str(i + 1): union_idx[i] for i in range(len(union_idx))}
 
             try:
-                citations = re.findall(r"\[.+?(\d+)", item['new_answer'])
+                citations = re.findall(r"\[.+?(\d+)", item["new_answer"])
                 ans_idx_set = {mapper[r] for r in citations if r in mapper}
             except KeyError as e:
                 print(f"KeyError: {e}, Question: {item['question']}")
@@ -161,24 +190,39 @@ def process_data(data_list: List[dict], max_cite: int, score_key: str) -> List[d
 
             cited_sents = []
             for sent in sents:
-                ans_idx = {mapper[r] for r in re.findall(r"\[.+?(\d+)", sent) if r in mapper}
+                ans_idx = {
+                    mapper[r] for r in re.findall(r"\[.+?(\d+)", sent) if r in mapper
+                }
                 if ans_idx and ans_idx.issubset(union_idx):
                     doc_idxes = extract_docs(
                         ans_idx,
-                        [doc['answers_found'] for doc in item['docs']],
-                        [doc[score_key] for doc in item['docs']],
-                        max_cite
+                        [doc["answers_found"] for doc in item["docs"]],
+                        [doc[score_key] for doc in item["docs"]],
+                        max_cite,
                     )
                     if doc_idxes:
                         sent = remove_citations(sent).strip()
-                        sent = insert_reference(sent, [idx+1 for idx in doc_idxes])
+                        sent = insert_reference(sent, [idx + 1 for idx in doc_idxes])
                         cited_sents.append(sent)
             response = " ".join(cited_sents)
-            positive_data.append({"question": item['question'], "resp": response, "prompt": item['prompt']})
+            positive_data.append(
+                {
+                    "question": item["question"],
+                    "resp": response,
+                    "prompt": item["prompt"],
+                }
+            )
         else:
-            response = random.choice(REJECT_RESPONSES)
-            positive_data.append({"question": item['question'], "resp": response, "prompt": item['prompt']})
+            response = random.choice(REFUSE_RESPONSES)
+            positive_data.append(
+                {
+                    "question": item["question"],
+                    "resp": response,
+                    "prompt": item["prompt"],
+                }
+            )
     return positive_data
+
 
 def process_qampari_data(data_list: List[dict], max_cite: int) -> List[dict]:
     """
@@ -193,65 +237,91 @@ def process_qampari_data(data_list: List[dict], max_cite: int) -> List[dict]:
     """
     positive_data = []
     for item in data_list:
-        union_idx = np.nonzero(np.bitwise_or.reduce([doc['answers_found'] for doc in item['docs']]))[0].tolist()
+        union_idx = np.nonzero(
+            np.bitwise_or.reduce([doc["answers_found"] for doc in item["docs"]])
+        )[0].tolist()
         if union_idx:
-            sents = [item['answers'][idx][0].strip() for idx in union_idx]
+            sents = [item["answers"][idx][0].strip() for idx in union_idx]
             cited_sents = []
             for i, sent in enumerate(sents):
                 ans_idx = {union_idx[i]}
                 doc_idxes = extract_docs(
                     ans_idx,
-                    [doc['answers_found'] for doc in item['docs']],
-                    [doc['score'] for doc in item['docs']],
-                    max_cite
+                    [doc["answers_found"] for doc in item["docs"]],
+                    [doc["score"] for doc in item["docs"]],
+                    max_cite,
                 )
                 if doc_idxes:
-                    sent = insert_reference(sent, [idx+1 for idx in doc_idxes]).strip('.').strip()
+                    sent = (
+                        insert_reference(sent, [idx + 1 for idx in doc_idxes])
+                        .strip(".")
+                        .strip()
+                    )
                     cited_sents.append(sent)
             response = ", ".join(cited_sents) + "."
-            positive_data.append({"question": item['question'], "resp": response, "prompt": item['prompt']})
+            positive_data.append(
+                {
+                    "question": item["question"],
+                    "resp": response,
+                    "prompt": item["prompt"],
+                }
+            )
         else:
-            response = random.choice(REJECT_RESPONSES)
-            positive_data.append({"question": item['question'], "resp": response, "prompt": item['prompt']})
+            response = random.choice(REFUSE_RESPONSES)
+            positive_data.append(
+                {
+                    "question": item["question"],
+                    "resp": response,
+                    "prompt": item["prompt"],
+                }
+            )
     return positive_data
 
+
 def main():
-    parser = ArgumentParser(description="Process datasets and generate positive data examples.")
-    parser.add_argument('--input_folder', type=str, required=True, help='Path to the input data folder.')
+    parser = ArgumentParser(
+        description="Process datasets and generate positive data examples."
+    )
+    parser.add_argument(
+        "--input_folder", type=str, required=True, help="Path to the input data folder."
+    )
     args = parser.parse_args()
 
     # Load datasets
-    asqa_data, eli5_data, qampari_data, asqa_new_ans, eli5_new_ans = load_json_files_from_folder(args.input_folder)
+    asqa_data, eli5_data, qampari_data, asqa_new_ans, eli5_new_ans = (
+        load_json_files_from_folder(args.input_folder)
+    )
 
-    print(f'Number of ASQA data: {len(asqa_data)}')
-    print(f'Number of ELI5 data: {len(eli5_data)}')
-    print(f'Number of QAMPARI data: {len(qampari_data)}')
-    print(f'Number of ASQA new answers: {len(asqa_new_ans)}')
-    print(f'Number of ELI5 new answers: {len(eli5_new_ans)}')
+    print(f"Number of ASQA data: {len(asqa_data)}")
+    print(f"Number of ELI5 data: {len(eli5_data)}")
+    print(f"Number of QAMPARI data: {len(qampari_data)}")
+    print(f"Number of ASQA new answers: {len(asqa_new_ans)}")
+    print(f"Number of ELI5 new answers: {len(eli5_new_ans)}")
 
     # Incorporate new answers
     for line in asqa_new_ans:
-        asqa_data[line['index']]['new_answer'] = line['new_answer']
+        asqa_data[line["index"]]["new_answer"] = line["new_answer"]
     for line in eli5_new_ans:
-        eli5_data[line['index']]['new_answer'] = line['new_answer']
+        eli5_data[line["index"]]["new_answer"] = line["new_answer"]
 
     # Process datasets
-    asqa_positive_data = process_data(asqa_data, max_cite=2, score_key='score')
-    eli5_positive_data = process_data(eli5_data, max_cite=2, score_key='rec_score')
+    asqa_positive_data = process_data(asqa_data, max_cite=2, score_key="score")
+    eli5_positive_data = process_data(eli5_data, max_cite=2, score_key="rec_score")
     qampari_positive_data = process_qampari_data(qampari_data, max_cite=1)
 
     # Save processed data
     output_files = {
-        'asqa_positive_data.json': asqa_positive_data,
-        'eli5_positive_data.json': eli5_positive_data,
-        'qampari_positive_data.json': qampari_positive_data
+        "asqa_positive_data.json": asqa_positive_data,
+        "eli5_positive_data.json": eli5_positive_data,
+        "qampari_positive_data.json": qampari_positive_data,
     }
 
     for filename, data in output_files.items():
         output_path = os.path.join(args.input_folder, filename)
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
         print(f"Saved {len(data)} records to {output_path}")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

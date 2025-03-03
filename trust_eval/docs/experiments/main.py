@@ -9,13 +9,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument("config", type=str)
 args = parser.parse_args()
 
-# # Generate responses
-# generator_config = ResponseGeneratorConfig.from_yaml(yaml_path=args.config)
-# for key, value in vars(generator_config).items():
-#     logger.info(f"  {key}: {value}")
-# generator = ResponseGenerator(generator_config)
-# generator.generate_responses()
-# generator.save_responses()
+# Generate responses
+generator_config = ResponseGeneratorConfig.from_yaml(yaml_path=args.config)
+for key, value in vars(generator_config).items():
+    logger.info(f"  {key}: {value}")
+generator = ResponseGenerator(generator_config)
+generator.generate_responses()
+generator.save_responses()
 
 # Evaluate responses
 evaluation_config = EvaluationConfig.from_yaml(yaml_path=args.config)

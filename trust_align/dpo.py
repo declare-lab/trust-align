@@ -49,23 +49,22 @@ python examples/scripts/dpo.py \
     --lora_alpha=16
 """
 
-import colorlog
+import copy
 import random
 import sys
-import copy
 from contextlib import nullcontext
-
-
-import torch
-from tqdm.auto import tqdm
-import datasets
-import transformers
 from copy import deepcopy
+
+import colorlog
+import datasets
+import torch
+import transformers
 from accelerate.state import PartialState
-from peft import get_peft_model, PeftConfig
+from alignment import DataArguments, H4ArgumentParser
+from peft import PeftConfig, get_peft_model
+from tqdm.auto import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer, set_seed
 from transformers.trainer_utils import get_last_checkpoint
-
 from trl import (
     DPOConfig,
     DPOTrainer,
@@ -75,12 +74,6 @@ from trl import (
     get_peft_config,
     get_quantization_config,
 )
-
-from alignment import (
-    H4ArgumentParser, 
-    DataArguments
-)
-
 from utils import get_datasets, is_adapter_model
 
 tqdm.pandas()
@@ -91,33 +84,33 @@ logger = colorlog.getLogger(__name__)
 if __name__ == "__main__":
     parser = H4ArgumentParser((DataArguments, ModelConfig, DPOConfig))
     data_args, model_args, training_args = parser.parse()
-    
+
     # Set seed for reproducibility
     set_seed(training_args.seed)
 
     ###############
     # Setup logging
     ###############
-    fmt_string = '%(log_color)s %(asctime)s - %(levelname)s - %(message)s'
+    fmt_string = "%(log_color)s %(asctime)s - %(levelname)s - %(message)s"
     log_colors = {
-            'DEBUG': 'white',
-            'INFO': 'green',
-            'WARNING': 'yellow',
-            'ERROR': 'red',
-            'CRITICAL': 'purple'
-            }
+        "DEBUG": "white",
+        "INFO": "green",
+        "WARNING": "yellow",
+        "ERROR": "red",
+        "CRITICAL": "purple",
+    }
     log_level = training_args.get_process_log_level()
     colorlog.basicConfig(
-        log_colors=log_colors, 
-        format=fmt_string, 
+        log_colors=log_colors,
+        format=fmt_string,
         handlers=[colorlog.StreamHandler(sys.stdout)],
-        level = log_level
+        level=log_level,
     )
     datasets.utils.logging.set_verbosity(log_level)
     transformers.utils.logging.set_verbosity(log_level)
     transformers.utils.logging.enable_default_handler()
     transformers.utils.logging.enable_explicit_format()
-    
+
     # Log on each process a small summary
     logger.warning(
         f"Process rank: {training_args.local_rank}, device: {training_args.device}, n_gpu: {training_args.n_gpu}"
@@ -126,8 +119,7 @@ if __name__ == "__main__":
     logger.info(f"Model parameters {model_args}")
     logger.info(f"Data parameters {data_args}")
     logger.info(f"Training/evaluation parameters {training_args}")
-    
-    
+
     ################
     # Model & Tokenizer
     ################
@@ -144,11 +136,13 @@ if __name__ == "__main__":
         device_map=get_kbit_device_map() if quantization_config is not None else None,
         quantization_config=quantization_config,
     )
-    
+
     model = model_args.model_name_or_path
     if is_adapter_model(model, model_args.model_revision) is True:
         logger.info(f"Loading SFT adapter for {model_args.model_name_or_path=}")
-        peft_config = PeftConfig.from_pretrained(model_args.model_name_or_path, revision=model_args.model_revision)
+        peft_config = PeftConfig.from_pretrained(
+            model_args.model_name_or_path, revision=model_args.model_revision
+        )
         base_model = AutoModelForCausalLM.from_pretrained(
             peft_config.base_model_name_or_path,
             **model_kwargs,
@@ -162,12 +156,12 @@ if __name__ == "__main__":
     if model_args.use_peft is True:
         ref_model = None
         ref_model_kwargs = None
-        
+
     # TOKENIZER
     tokenizer = AutoTokenizer.from_pretrained(
         model_args.model_name_or_path,
         revision=model_args.model_revision,
-        trust_remote_code=model_args.trust_remote_code
+        trust_remote_code=model_args.trust_remote_code,
     )
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token_id = tokenizer.unk_token_id
@@ -179,17 +173,18 @@ if __name__ == "__main__":
     if tokenizer.model_max_length > 100_000:
         tokenizer.model_max_length = training_args.max_length
     assert tokenizer.chat_template is not None, "Needs chat template!"
-    
+
     if "llama-3" in model_args.model_name_or_path.lower():
         # For llama3 only
         tokenizer.chat_template = "{% set loop_messages = messages %}{% for message in loop_messages %}{% set content = '<|start_header_id|>' + message['role'] + '<|end_header_id|>\n\n'+ message['content'] | trim + '<|eot_id|>' %}{% if loop.index0 == 0 %}{% set content = bos_token + content %}{% endif %}{{ content }}{% endfor %}{% if add_generation_prompt %}{{ '<|start_header_id|>assistant<|end_header_id|>\n\n' }}{% endif %}"
-        tokenizer.pad_token_id = tokenizer.convert_tokens_to_ids("<|reserved_special_token_0|>")
+        tokenizer.pad_token_id = tokenizer.convert_tokens_to_ids(
+            "<|reserved_special_token_0|>"
+        )
 
-    
     ################
     # Dataset
     ################
-    logger.info("*** Loading datasets ***") 
+    logger.info("*** Loading datasets ***")
     raw_datasets = get_datasets(
         data_args,
         splits=data_args.dataset_splits,
@@ -201,34 +196,46 @@ if __name__ == "__main__":
     )
     column_names = list(raw_datasets["train"].features)
 
-    
     #####################
     # Apply chat template
-    ##################### 
+    #####################
     def formatting_chat_func(example, tokenizer):
-        prompt = [{"role":"user", "content": example["prompt"]}]
-        example["prompt"] = tokenizer.apply_chat_template(prompt, tokenize=False, add_generation_prompt=False)
-        return {"prompt": example["prompt"], "chosen": example["chosen"], "rejected": example["rejected"]}
-    
+        prompt = [{"role": "user", "content": example["prompt"]}]
+        example["prompt"] = tokenizer.apply_chat_template(
+            prompt, tokenize=False, add_generation_prompt=False
+        )
+        return {
+            "prompt": example["prompt"],
+            "chosen": example["chosen"],
+            "rejected": example["rejected"],
+        }
+
     with PartialState().main_process_first():
         raw_datasets = raw_datasets.map(
             formatting_chat_func,
             fn_kwargs={"tokenizer": tokenizer},
             num_proc=data_args.preprocessing_num_workers,
-            remove_columns=column_names if training_args.remove_unused_columns else None,
-            desc="Formatting comparisons with prompt template"
+            remove_columns=(
+                column_names if training_args.remove_unused_columns else None
+            ),
+            desc="Formatting comparisons with prompt template",
         )
 
     # Log a few random samples from the training set:
     if PartialState().is_main_process:
         for index in random.sample(range(len(raw_datasets["train"])), 3):
-            logger.info(f"Prompt sample {index} of the raw training set:\n\n{raw_datasets['train'][index]['prompt']}")
-            logger.info(f"Chosen sample {index} of the raw training set:\n\n{raw_datasets['train'][index]['chosen']}")
-            logger.info(f"Rejected sample {index} of the raw training set:\n\n{raw_datasets['train'][index]['rejected']}")
+            logger.info(
+                f"Prompt sample {index} of the raw training set:\n\n{raw_datasets['train'][index]['prompt']}"
+            )
+            logger.info(
+                f"Chosen sample {index} of the raw training set:\n\n{raw_datasets['train'][index]['chosen']}"
+            )
+            logger.info(
+                f"Refused sample {index} of the raw training set:\n\n{raw_datasets['train'][index]['rejected']}"
+            )
 
     train_dataset = raw_datasets["train"]
     eval_dataset = raw_datasets["test"]
-    
 
     ################
     # Instantiate DPO trainer
@@ -246,9 +253,8 @@ if __name__ == "__main__":
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
         tokenizer=tokenizer,
-        peft_config=get_peft_config(model_args)
+        peft_config=get_peft_config(model_args),
     )
-
 
     ###############
     # Training loop
@@ -257,13 +263,19 @@ if __name__ == "__main__":
     checkpoint = None
     # Check for last checkpoint
     if training_args.resume_from_checkpoint is not None:
-        checkpoint = get_last_checkpoint(training_args.output_dir) if isinstance(training_args.resume_from_checkpoint, bool) else training_args.resume_from_checkpoint
+        checkpoint = (
+            get_last_checkpoint(training_args.output_dir)
+            if isinstance(training_args.resume_from_checkpoint, bool)
+            else training_args.resume_from_checkpoint
+        )
         if checkpoint is not None:
             logger.info(f"Checkpoint detected, resuming training at {checkpoint=}.")
         else:
-            logger.error(f"Failed to load last checkpoint at {checkpoint=}. Start training from scratch")
-    
-    train_result = trainer.train(resume_from_checkpoint=checkpoint)        
+            logger.error(
+                f"Failed to load last checkpoint at {checkpoint=}. Start training from scratch"
+            )
+
+    train_result = trainer.train(resume_from_checkpoint=checkpoint)
     metrics = train_result.metrics
     metrics["train_samples"] = len(raw_datasets["train"])
     trainer.log_metrics("train", metrics)
@@ -271,8 +283,7 @@ if __name__ == "__main__":
     trainer.save_state()
 
     logger.info("*** Training complete ***")
-    
-    
+
     ##################################
     # Save model and create model card
     ##################################
@@ -285,7 +296,6 @@ if __name__ == "__main__":
         trainer.model.config.use_cache = True
         trainer.model.config.save_pretrained(training_args.output_dir)
 
-
     ##########
     # Evaluate
     ##########
@@ -296,5 +306,5 @@ if __name__ == "__main__":
         metrics["eval_samples"] = len(eval_dataset)
         trainer.log_metrics("eval", metrics)
         trainer.save_metrics("eval", metrics)
-    
+
     logger.info("*** Evaluating complete ***")

@@ -32,20 +32,23 @@ class Evaluator:
         Initializes the evaluator with configurations.
 
         Args:
-            
+
         """
         self.config = config
         self.result_path = self.config.result_path
-        
+
         self.refusal_flag = config.refusal_flag
         self.refusal_threshold = config.refusal_threshold
 
         self.eval_type = config.eval_type
         self.eval_data = self.load_data()
-        self.normalized_data, self.normalized_answered_data, self.normalized_answerable_data = self._process_data(self.eval_data)
+        (
+            self.normalized_data,
+            self.normalized_answered_data,
+            self.normalized_answerable_data,
+        ) = self._process_data(self.eval_data)
 
         self.result: Dict[str, Any] = {}
-
 
     def _normalize_data(self, data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
@@ -62,7 +65,9 @@ class Evaluator:
             item["output"] = remove_citations(item["output"])
         return normalized_data
 
-    def _compute_answered_data(self, data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _compute_answered_data(
+        self, data: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
         """
         Extract answered data from the dataset.
 
@@ -79,7 +84,9 @@ class Evaluator:
                 answered_data.append(copy.deepcopy(item))
         return answered_data
 
-    def _compute_answerable_data(self, data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _compute_answerable_data(
+        self, data: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
         """
         Extract answerable data from the dataset.
 
@@ -91,12 +98,16 @@ class Evaluator:
         """
         answerable_data = []
         for item in data:
-            answerable = _is_answerable(np.bitwise_or.reduce([doc["answers_found"] for doc in item["docs"]]))
+            answerable = _is_answerable(
+                np.bitwise_or.reduce([doc["answers_found"] for doc in item["docs"]])
+            )
             if answerable:
                 answerable_data.append(copy.deepcopy(item))
         return answerable_data
-    
-    def _process_data(self, data: List[Dict[str, Any]]) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+
+    def _process_data(
+        self, data: List[Dict[str, Any]]
+    ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         normalized_data = self._normalize_data(data)
         answered_data = self._compute_answered_data(data)
         answerable_data = self._compute_answerable_data(data)
@@ -110,7 +121,9 @@ class Evaluator:
         self.eval_data = json.load(open(self.config.eval_file))["data"]
         return self.eval_data
 
-    def compute_metrics(self, correctness: bool = True, citations: bool = True) -> Dict[str, Any]:
+    def compute_metrics(
+        self, correctness: bool = True, citations: bool = True
+    ) -> Dict[str, Any]:
         """
         Compute evaluation metrics for the given dataset.
 
@@ -133,11 +146,15 @@ class Evaluator:
                 self.normalized_data,
                 self.normalized_answered_data,
                 self.normalized_answerable_data,
-                self.config
+                self.config,
             )
             self.result.update(metric_results)
 
-        correctness_funcs = {"em": get_all_em_scores, "em5": get_all_em5_scores, "cm": get_all_cm_scores}
+        correctness_funcs = {
+            "em": get_all_em_scores,
+            "em5": get_all_em5_scores,
+            "cm": get_all_cm_scores,
+        }
         if self.config.compute_correctness:
             logger.info("Computing correctness scores...")
             func = correctness_funcs[self.eval_type]
@@ -146,10 +163,10 @@ class Evaluator:
                 self.normalized_data,
                 self.normalized_answered_data,
                 self.normalized_answerable_data,
-                self.config
+                self.config,
             )
             self.result.update(metric_results)
-        
+
         if self.config.compute_citations:
             logger.info("Computing citation scores...")
             metric_results = get_citation_scores(
@@ -157,17 +174,15 @@ class Evaluator:
                 self.normalized_data,
                 self.normalized_answered_data,
                 self.normalized_answerable_data,
-                self.config
+                self.config,
             )
             self.result.update(metric_results)
-        
+
         if self.config.compute_correctness and self.config.compute_citations:
             logger.info("Computing trust scores...")
             self.result = compute_trust_score(self.result, self.config)
-            
-        logger.info(f"{self.result}")
 
-        dist.destroy_process_group()
+        logger.info(f"{self.result}")
 
         return self.result
 

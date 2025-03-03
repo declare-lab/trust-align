@@ -10,6 +10,7 @@ from .logging_config import logger
 
 T = TypeVar("T", bound="BaseConfig")
 
+
 @dataclass
 class BaseConfig(ABC):
     @classmethod
@@ -21,21 +22,24 @@ class BaseConfig(ABC):
             yaml_data = yaml.safe_load(file)
 
         valid_fields = {f.name for f in fields(cls)}
-        valid_data = {key: value for key, value in yaml_data.items() if key in valid_fields}
-        config = cls(yaml_path=yaml_path, **valid_data) # type: ignore[call-arg]
+        valid_data = {
+            key: value for key, value in yaml_data.items() if key in valid_fields
+        }
+        config = cls(yaml_path=yaml_path, **valid_data)  # type: ignore[call-arg]
         return config
-    
+
     def _generate_path(self, dir: str, file_name: str) -> str:
         base_dir = Path(dir)
         base_dir.mkdir(parents=True, exist_ok=True)  # Ensure the directory exists
         return str(base_dir / file_name)
-    
+
+
 @dataclass
 class ResponseGeneratorConfig(BaseConfig):
 
     # General settings
     yaml_path: str
-    model: str = "Qwen/Qwen2.5-3B-Instruct" # Model to use
+    model: str = "Qwen/Qwen2.5-3B-Instruct"  # Model to use
     data_type: Literal["asqa", "qampari", "eli5"] = "eli5"
     prompt_file: Optional[str] = None  # Path to the prompt file
     data_file: Optional[str] = None  # Path to the evaluation file
@@ -48,15 +52,20 @@ class ResponseGeneratorConfig(BaseConfig):
     seed: int = 42  # Random seed
     no_doc_in_demo: bool = False  # Whether to remove documents in demo
     fewer_doc_in_demo: bool = False  # Whether to use fewer documents in demo
-    ndoc_in_demo: Optional[int] = None  # Number of documents in demo when using fewer docs
+    ndoc_in_demo: Optional[int] = (
+        None  # Number of documents in demo when using fewer docs
+    )
     no_demo: bool = False  # Whether to disable demos; same effect as shot=0
     refusal: bool = True  # Whether to use refusal demos
 
     # Model and naming
-    openai_api: bool = False  # Whether to use OpenAI API
-    azure: bool = False  # Whether to use Azure OpenAI API
+    azure_openai_api: bool = (
+        False  # Whether to use Azure OpenAI API. If this is True, for model, only [GPT4, GPT4o]
+    )
     lora_path: Optional[str] = None  # Path to LoRA training checkpoint
     vllm: bool = True  # Whether to use vllm for acceleration
+    retry: bool = False  # Whether to retry
+    max_retry: int = 5  # Maximum number of times to retry
 
     # Decoding settings
     temperature: float = 0.5  # Temperature for decoding
@@ -71,20 +80,29 @@ class ResponseGeneratorConfig(BaseConfig):
 
     # Posthoc settings
     posthoc: bool = False
-    posthoc_retriever: str = "gtr-t5-large" # Retriever to use. Options: `gtr-t5-large` for PostCite, `nli` for PostAttr
-    posthoc_retriever_device: str = "cuda" # Where to put the dense retriever if using. Options: `cuda`, `cpu`
-    overwrite: bool = True # Overwrite existing citations
-    external_docs: Optional[str] = None # Use external documents
+    posthoc_retriever: str = (
+        "gtr-t5-large"  # Retriever to use. Options: `gtr-t5-large` for PostCite, `nli` for PostAttr
+    )
+    posthoc_retriever_device: str = (
+        "cuda"  # Where to put the dense retriever if using. Options: `cuda`, `cpu`
+    )
+    overwrite: bool = True  # Overwrite existing citations
+    external_docs: Optional[str] = None  # Use external documents
+
+    data_generation: bool = False  # default mode is evaluation mode
+    sft_model: bool = (
+        False  # by default its a pretrained instruct models. Matters because our finetuned models have <think> tokens
+    )
 
     def __post_init__(self) -> None:
         self.data_file = self.data_file or self._generate_path(
             dir="data", file_name=f"{self.data_type}_eval_top100_calibrated.json"
         )
-        
+
         self.eval_file = self.eval_file or self._generate_path(
             dir="eval_data", file_name=f"{self.data_type}_eval_top100_calibrated.json"
         )
-        
+
         if self.prompt_file is None:
             closedbook = "_closedbook" if self.ndoc == 0 else ""
             refusal = "_default" if not self.refusal else "_refusal"
@@ -99,8 +117,12 @@ class EvaluationConfig(BaseConfig):
     yaml_path: str
     data_type: Literal["asqa", "qampari", "eli5"] = "eli5"
     eval_file: Optional[str] = None
-    result_path: Optional[str] = None  # output file path for evaluation result (required)
-    eval_type: str = "cm"  # evaluation type for different dataset format ["em", "em5", "cm"]
+    result_path: Optional[str] = (
+        None  # output file path for evaluation result (required)
+    )
+    eval_type: str = (
+        "cm"  # evaluation type for different dataset format ["em", "em5", "cm"]
+    )
 
     # correctness configs
     compute_correctness: bool = True
@@ -115,7 +137,7 @@ class EvaluationConfig(BaseConfig):
     refusal_flag: str = "I apologize, but I couldn't find an answer"
     refusal_threshold: int = 85
     autoais_model: str = "google/t5_xxl_true_nli_mixture"
-    
+
     def __post_init__(self) -> None:
         """
         Set default configurations based on the evaluation type.
@@ -125,14 +147,20 @@ class EvaluationConfig(BaseConfig):
             "qampari": {"eval_type": "em5", "is_qampari": True},
             "eli5": {"eval_type": "cm", "is_qampari": False},
         }
-        
+
         if self.data_type in data2eval:
             eval_config = data2eval[self.data_type]
-            assert isinstance(eval_config["eval_type"], str) and eval_config["eval_type"] in ["em", "em5", "cm"]
+            assert isinstance(eval_config["eval_type"], str) and eval_config[
+                "eval_type"
+            ] in ["em", "em5", "cm"]
             self.eval_type = eval_config["eval_type"]
             for key, value in eval_config.items():
                 setattr(self, key, value)
         logger.debug("self.eval_type: %s", self.eval_type)
 
-        self.eval_file = self.eval_file or self._generate_path(dir="eval_data", file_name=f"{self.data_type}_eval_top100_calibrated.json")
-        self.result_path = self.result_path or self._generate_path(dir="results", file_name=f"{self.eval_type}_evaluation.json")
+        self.eval_file = self.eval_file or self._generate_path(
+            dir="eval_data", file_name=f"{self.data_type}_eval_top100_calibrated.json"
+        )
+        self.result_path = self.result_path or self._generate_path(
+            dir="results", file_name=f"{self.eval_type}_evaluation.json"
+        )

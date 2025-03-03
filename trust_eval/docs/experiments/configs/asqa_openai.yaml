@@ -1,14 +1,15 @@
 # Generator
-model: Qwen/Qwen2.5-3B-Instruct
+model: GPT4o 
 data_type: "asqa"
 prompt_file: prompts/asqa_refusal.json
 data_file: data/asqa_eval_top100_calibrated.json
 ndoc: 5
-openai_api: True
-azure: True
+azure_openai_api: True
 temperature: 0.5
 top_p: 0.95
 max_length: 8192
+quick_test: 10
+vllm: False
 
 # Evaluator
 eval_type: em

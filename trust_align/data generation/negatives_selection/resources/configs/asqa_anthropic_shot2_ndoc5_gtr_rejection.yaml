@@ -1,5 +1,5 @@
 ---
-prompt_file: resources/prompts/asqa_rejection.json
+prompt_file: resources/prompts/asqa_refusal.json
 shot: 2
 ndoc: 5
 dataset_name: asqa

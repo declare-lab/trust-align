@@ -21,45 +21,60 @@ def compute_len(data: List[Dict[str, Any]]) -> float:
     if len(data) == 0:
         logger.warning("Warning: data should not be zero")
         return 0
-    
+
     res, cntr = 0, 0
     for item in data:
         res += len(item["output"].split())
         cntr += 1
     return res / cntr
 
+
 def _is_answerable(supported_claims: np.ndarray) -> bool:
     return any(supported_claims)
 
-def _is_refusal(item: Dict[str, Any], args: Any) -> bool:
-    return fuzz.partial_ratio(normalize_answer(args.refusal_flag), normalize_answer(item['output'])) > args.refusal_threshold
 
-def _compute_exact_match_single_query(item: Dict[str, Any], args: Any, calib: bool=False, parametric: bool=False) -> float:
+def _is_refusal(item: Dict[str, Any], args: Any) -> bool:
+    return (
+        fuzz.partial_ratio(
+            normalize_answer(args.refusal_flag), normalize_answer(item["output"])
+        )
+        > args.refusal_threshold
+    )
+
+
+def _compute_exact_match_single_query(
+    item: Dict[str, Any], args: Any, calib: bool = False, parametric: bool = False
+) -> float:
     loc_acc = []
     if calib:
-        supported_claims = np.bitwise_or.reduce([doc["answers_found"] for doc in item['docs']]).tolist()
+        supported_claims = np.bitwise_or.reduce(
+            [doc["answers_found"] for doc in item["docs"]]
+        ).tolist()
         if _is_answerable(supported_claims) and not _is_refusal(item, args):
-            for idx, ans_list in enumerate(item['answers']):
+            for idx, ans_list in enumerate(item["answers"]):
                 # ignore gold answers that are not supported by given docs
                 if supported_claims[idx] == 1:
                     loc_acc.append(_exact_presence(ans_list, item["output"]))
         else:
             loc_acc.append(False)
     else:
-        for ans_list in item['answers']:
+        for ans_list in item["answers"]:
             loc_acc.append(_exact_presence(ans_list, item["output"]))
 
     if calib and parametric:
-        return float(np.sum(a=loc_acc)/len(supported_claims))
+        return float(np.sum(a=loc_acc) / len(supported_claims))
     else:
         return float(np.mean(loc_acc))
 
-def compute_exact_match(data: List[Dict[str, Any]], args: Any, calib: bool=False, parametric: bool=False) -> float:
+
+def compute_exact_match(
+    data: List[Dict[str, Any]], args: Any, calib: bool = False, parametric: bool = False
+) -> float:
     """
     Computes exact match (STR-EM) and hit metrics (STR-EM-HIT) (only for ASQA) for given data.
 
-    Evaluates how well model predictions match gold answers, optionally filtering answers 
-    based on document recall (calibration). Returns metrics for regular, calibrated, and 
+    Evaluates how well model predictions match gold answers, optionally filtering answers
+    based on document recall (calibration). Returns metrics for regular, calibrated, and
     parametric evaluations.
 
     Parameters:
@@ -85,39 +100,62 @@ def compute_exact_match(data: List[Dict[str, Any]], args: Any, calib: bool=False
         - `parametric_str_em` and `parametric_str_hit` (if `parametric=True`).
 
     """
-    
+
     if len(data) == 0:
         logger.warning("Warning: data should not be zero")
         return 0
 
-    if 'answers' not in data[0] or data[0]['answers'] is None:
+    if "answers" not in data[0] or data[0]["answers"] is None:
         logger.warning("Warning: no answers found in data")
         return 0
 
     acc = []
 
     for item in tqdm(data):
-        acc.append(_compute_exact_match_single_query(item, args, calib=calib, parametric=parametric))
+        acc.append(
+            _compute_exact_match_single_query(
+                item, args, calib=calib, parametric=parametric
+            )
+        )
     return float(100 * np.mean(acc))
 
-def get_all_em_scores(data: List[Dict], normalized_data: List[Dict], normalized_answered_data: List[Dict], normalized_answerable_data: List[Dict], args: Any) -> Dict[str, Any]:
+
+def get_all_em_scores(
+    data: List[Dict],
+    normalized_data: List[Dict],
+    normalized_answered_data: List[Dict],
+    normalized_answerable_data: List[Dict],
+    args: Any,
+) -> Dict[str, Any]:
     result = {}
-    result['regular_str_em'] = compute_exact_match(normalized_data, args)
-    result['answered_str_em'] = compute_exact_match(normalized_answered_data, args)
+    result["regular_str_em"] = compute_exact_match(normalized_data, args)
+    result["answered_str_em"] = compute_exact_match(normalized_answered_data, args)
 
     if args.calib:
-        result['calib_answered_str_em'] = compute_exact_match(normalized_answered_data, args, calib=True)
-        result['calib_answerable_str_em'] = compute_exact_match(normalized_answerable_data, args, calib=True)
-        result['calib_str_em_f1'] = stats.hmean([result['calib_answered_str_em'], result['calib_answerable_str_em']])
+        result["calib_answered_str_em"] = compute_exact_match(
+            normalized_answered_data, args, calib=True
+        )
+        result["calib_answerable_str_em"] = compute_exact_match(
+            normalized_answerable_data, args, calib=True
+        )
+        result["calib_str_em_f1"] = stats.hmean(
+            [result["calib_answered_str_em"], result["calib_answerable_str_em"]]
+        )
 
     if args.parametric:
-        result['parametric_str_em'] = compute_exact_match(normalized_answered_data, args, calib=True, parametric=True)
-        result['parametric_str_em'] = result['answered_str_em'] - result['parametric_str_em']
-    
+        result["parametric_str_em"] = compute_exact_match(
+            normalized_answered_data, args, calib=True, parametric=True
+        )
+        result["parametric_str_em"] = (
+            result["answered_str_em"] - result["parametric_str_em"]
+        )
+
     return result
 
 
-def compute_claim_match(data: List[Dict[str, Any]], args: Any, calib: bool=False, parametric: bool=False) -> Dict[str, Any]:
+def compute_claim_match(
+    data: List[Dict[str, Any]], args: Any, calib: bool = False, parametric: bool = False
+) -> Dict[str, Any]:
     logger.info("Computing claims...")
 
     regular_scores = []
@@ -129,14 +167,16 @@ def compute_claim_match(data: List[Dict[str, Any]], args: Any, calib: bool=False
         if parametric:
             parametric_answered_scores = []
     for item in tqdm(data, desc="Computing claim match score"):
-        normalized_output = remove_citations(item['output'])
+        normalized_output = remove_citations(item["output"])
         entail = 0
         claims = [claim_list[0] for claim_list in item["answers"]]
-        
+
         if calib:
             calib_entail = 0
-            supported_claims = np.bitwise_or.reduce([doc["answers_found"] for doc in item['docs']]).tolist()
-        
+            supported_claims = np.bitwise_or.reduce(
+                [doc["answers_found"] for doc in item["docs"]]
+            ).tolist()
+
         for i, claim in enumerate(claims):
             ais_score = _run_nli_autoais(normalized_output, claim, args)
             entail += ais_score
@@ -144,7 +184,7 @@ def compute_claim_match(data: List[Dict[str, Any]], args: Any, calib: bool=False
                 # ignore golden answers that are not recalled by given docs
                 if supported_claims[i] == 1:
                     calib_entail += ais_score
-        
+
         # answered/answerable condition
         refusal = _is_refusal(item, args)
         answerable = _is_answerable(supported_claims)
@@ -153,53 +193,114 @@ def compute_claim_match(data: List[Dict[str, Any]], args: Any, calib: bool=False
             answered_scores.append(entail / len(claims))
 
         if calib:
-            if not refusal:    
+            if not refusal:
                 if answerable:
                     calib_answered_scores.append(calib_entail / sum(supported_claims))
                     if parametric:
-                        parametric_answered_scores.append(calib_entail / len(supported_claims))
+                        parametric_answered_scores.append(
+                            calib_entail / len(supported_claims)
+                        )
                 else:
                     calib_answered_scores.append(0)
                     if parametric:
                         parametric_answered_scores.append(0)
-            
+
             if answerable:
                 if not refusal:
                     calib_answerable_scores.append(calib_entail / sum(supported_claims))
                 else:
-                    calib_answerable_scores.append(0)            
+                    calib_answerable_scores.append(0)
 
         regular_scores.append(entail / len(claims))
-    
+
     if calib and parametric:
         return {
             "regular_claims_nli": 100 * np.mean(regular_scores),
-            "answered_claims_nli": 100 * np.mean(answered_scores if len(answered_scores) != 0 else 0),
-            "calib_answered_claims_nli": 100 * np.mean(calib_answered_scores if len(calib_answered_scores) != 0 else 0),
-            "calib_answerable_claims_nli": 100 * np.mean(calib_answerable_scores if len(calib_answerable_scores) != 0 else 0),
-            "parametric_answered_claims_nli": 100 * np.mean(answered_scores if len(answered_scores) != 0 else 0) - 100 * np.mean(parametric_answered_scores if len(parametric_answered_scores) != 0 else 0),
-            "calib_claims_nli_f1": stats.hmean([100 * np.mean(calib_answered_scores if len(calib_answered_scores) != 0 else 0), 100 * np.mean(calib_answerable_scores if len(calib_answerable_scores) != 0 else 0)])
+            "answered_claims_nli": 100
+            * np.mean(answered_scores if len(answered_scores) != 0 else 0),
+            "calib_answered_claims_nli": 100
+            * np.mean(calib_answered_scores if len(calib_answered_scores) != 0 else 0),
+            "calib_answerable_claims_nli": 100
+            * np.mean(
+                calib_answerable_scores if len(calib_answerable_scores) != 0 else 0
+            ),
+            "parametric_answered_claims_nli": 100
+            * np.mean(answered_scores if len(answered_scores) != 0 else 0)
+            - 100
+            * np.mean(
+                parametric_answered_scores
+                if len(parametric_answered_scores) != 0
+                else 0
+            ),
+            "calib_claims_nli_f1": stats.hmean(
+                [
+                    100
+                    * np.mean(
+                        calib_answered_scores if len(calib_answered_scores) != 0 else 0
+                    ),
+                    100
+                    * np.mean(
+                        calib_answerable_scores
+                        if len(calib_answerable_scores) != 0
+                        else 0
+                    ),
+                ]
+            ),
         }
     elif calib:
         return {
             "regular_claims_nli": 100 * np.mean(regular_scores),
-            "answered_claims_nli": 100 * np.mean(answered_scores if len(answered_scores) != 0 else 0),
-            "calib_answered_claims_nli": 100 * np.mean(calib_answered_scores if len(calib_answered_scores) != 0 else 0),
-            "calib_answerable_claims_nli": 100 * np.mean(calib_answerable_scores if len(calib_answerable_scores) != 0 else 0 ),
-            "calib_claims_nli_f1": stats.hmean([100 * np.mean(calib_answered_scores if len(calib_answered_scores) != 0 else 0), 100 * np.mean(calib_answerable_scores if len(calib_answerable_scores) != 0 else 0)])
+            "answered_claims_nli": 100
+            * np.mean(answered_scores if len(answered_scores) != 0 else 0),
+            "calib_answered_claims_nli": 100
+            * np.mean(calib_answered_scores if len(calib_answered_scores) != 0 else 0),
+            "calib_answerable_claims_nli": 100
+            * np.mean(
+                calib_answerable_scores if len(calib_answerable_scores) != 0 else 0
+            ),
+            "calib_claims_nli_f1": stats.hmean(
+                [
+                    100
+                    * np.mean(
+                        calib_answered_scores if len(calib_answered_scores) != 0 else 0
+                    ),
+                    100
+                    * np.mean(
+                        calib_answerable_scores
+                        if len(calib_answerable_scores) != 0
+                        else 0
+                    ),
+                ]
+            ),
         }
     else:
         return {
             "regular_claims_nli": 100 * np.mean(regular_scores),
-            "answered_claims_nli": 100 * np.mean(answered_scores if len(answered_scores) != 0 else 0),
+            "answered_claims_nli": 100
+            * np.mean(answered_scores if len(answered_scores) != 0 else 0),
         }
 
 
-def get_all_cm_scores(data: List[Dict], normalized_data: List[Dict], normalized_answered_data: List[Dict], normalized_answerable_data: List[Dict], args: Any) -> Dict[str, Any]:
-    return compute_claim_match(normalized_data, args, calib=args.calib, parametric=args.parametric)
+def get_all_cm_scores(
+    data: List[Dict],
+    normalized_data: List[Dict],
+    normalized_answered_data: List[Dict],
+    normalized_answerable_data: List[Dict],
+    args: Any,
+) -> Dict[str, Any]:
+    return compute_claim_match(
+        normalized_data, args, calib=args.calib, parametric=args.parametric
+    )
 
 
-def compute_qampari_f1(data: List[Dict[str, Any]], args: Any, cot: bool=False, prefix: str="", calib: bool=False, parametric: bool=False) -> Dict[str, Any]:
+def compute_qampari_f1(
+    data: List[Dict[str, Any]],
+    args: Any,
+    cot: bool = False,
+    prefix: str = "",
+    calib: bool = False,
+    parametric: bool = False,
+) -> Dict[str, Any]:
     if len(data) == 0:
         logger.warning("Warning: data should not be zero")
         return {
@@ -210,7 +311,7 @@ def compute_qampari_f1(data: List[Dict[str, Any]], args: Any, cot: bool=False, p
             prefix + "qampari_f1": 0,
             prefix + "qampari_f1_top5": 0,
         }
-    
+
     prec: List[float] = []
     rec: List[float] = []
     rec_top5: List[float] = []
@@ -220,44 +321,74 @@ def compute_qampari_f1(data: List[Dict[str, Any]], args: Any, cot: bool=False, p
     num_preds = []
     for item in tqdm(data, desc="Computing EM5 score"):
         if cot:
-            if ":" in item['output']:
-                o = ':'.join(item['output'].split(":")[1:]) # try to separate the COT part and the answer list part.
+            if ":" in item["output"]:
+                o = ":".join(
+                    item["output"].split(":")[1:]
+                )  # try to separate the COT part and the answer list part.
             else:
                 o = ""
         else:
-            o = item['output']
-        preds = [normalize_answer(x.strip()) for x in o.rstrip().rstrip(".").rstrip(",").split(",")]
-        preds = [p for p in preds if len(p) > 0] # delete empty answers
+            o = item["output"]
+        preds = [
+            normalize_answer(x.strip())
+            for x in o.rstrip().rstrip(".").rstrip(",").split(",")
+        ]
+        preds = [p for p in preds if len(p) > 0]  # delete empty answers
         num_preds.append(len(preds))
-        
+
         if calib:
             # at least answerable
-            supported_claims = np.bitwise_or.reduce([doc["answers_found"] for doc in item['docs']]).tolist()
+            supported_claims = np.bitwise_or.reduce(
+                [doc["answers_found"] for doc in item["docs"]]
+            ).tolist()
             if _is_answerable(supported_claims) and (not _is_refusal(item, args)):
                 # ignore golden answers that are not recalled by given docs
-                answers = [[normalize_answer(x) for x in ans] for i, ans in enumerate(item['answers']) if supported_claims[i] == 1]
+                answers = [
+                    [normalize_answer(x) for x in ans]
+                    for i, ans in enumerate(item["answers"])
+                    if supported_claims[i] == 1
+                ]
             else:
-                answers = [['']]
+                answers = [[""]]
         else:
-            answers = [[normalize_answer(x) for x in ans] for ans in item['answers']]
-            
+            answers = [[normalize_answer(x) for x in ans] for ans in item["answers"]]
+
         flat_answers = [item for sublist in answers for item in sublist]
-        
+
         if calib and parametric:
-            prec.append(sum([p in flat_answers for p in preds]) / len(preds) if len(preds) > 0 else 0)
-            rec.append(sum([any([x in preds for x in a]) for a in answers]) / len(supported_claims))
-            rec_top5.append(min(5, sum([any([x in preds for x in a]) for a in answers])) / min(5, len(supported_claims)))
+            prec.append(
+                sum([p in flat_answers for p in preds]) / len(preds)
+                if len(preds) > 0
+                else 0
+            )
+            rec.append(
+                sum([any([x in preds for x in a]) for a in answers])
+                / len(supported_claims)
+            )
+            rec_top5.append(
+                min(5, sum([any([x in preds for x in a]) for a in answers]))
+                / min(5, len(supported_claims))
+            )
         else:
-            prec.append(sum([p in flat_answers for p in preds]) / len(preds) if len(preds) > 0 else 0)
-            rec.append(sum([any([x in preds for x in a]) for a in answers]) / len(answers))
-            rec_top5.append(min(5, sum([any([x in preds for x in a]) for a in answers])) / min(5, len(answers)))
-            
+            prec.append(
+                sum([p in flat_answers for p in preds]) / len(preds)
+                if len(preds) > 0
+                else 0
+            )
+            rec.append(
+                sum([any([x in preds for x in a]) for a in answers]) / len(answers)
+            )
+            rec_top5.append(
+                min(5, sum([any([x in preds for x in a]) for a in answers]))
+                / min(5, len(answers))
+            )
+
         if (prec[-1] + rec[-1]) == 0:
             f1.append(0)
         else:
             f1.append(2 * prec[-1] * rec[-1] / (prec[-1] + rec[-1]))
         if (prec[-1] + rec_top5[-1]) == 0:
-            f1_top5.append(0) 
+            f1_top5.append(0)
         else:
             f1_top5.append(2 * prec[-1] * rec_top5[-1] / (prec[-1] + rec_top5[-1]))
 
@@ -271,26 +402,58 @@ def compute_qampari_f1(data: List[Dict[str, Any]], args: Any, cot: bool=False, p
     }
 
 
-def get_all_em5_scores(data: List[Dict], normalized_data: List[Dict], normalized_answered_data: List[Dict], normalized_answerable_data: List[Dict], args: Any) -> Dict[str, Any]:
+def get_all_em5_scores(
+    data: List[Dict],
+    normalized_data: List[Dict],
+    normalized_answered_data: List[Dict],
+    normalized_answerable_data: List[Dict],
+    args: Any,
+) -> Dict[str, Any]:
     result = {}
     result.update(_compute_incorrect_frequency(normalized_answered_data))
     result.update(compute_qampari_f1(normalized_data, args, prefix="regular_"))
-    result.update(compute_qampari_f1(normalized_answered_data, args, prefix="answered_"))
-    
+    result.update(
+        compute_qampari_f1(normalized_answered_data, args, prefix="answered_")
+    )
+
     if args.calib:
-        result.update(compute_qampari_f1(normalized_answered_data, args, prefix="calib_answered_", calib=True))
-        result.update(compute_qampari_f1(normalized_answerable_data, args, prefix="calib_answerable_", calib=True))
-        result["calib_qampari_em_f1"] = stats.hmean([result['calib_answered_qampari_f1_top5'], result['calib_answerable_qampari_f1_top5']])
+        result.update(
+            compute_qampari_f1(
+                normalized_answered_data, args, prefix="calib_answered_", calib=True
+            )
+        )
+        result.update(
+            compute_qampari_f1(
+                normalized_answerable_data, args, prefix="calib_answerable_", calib=True
+            )
+        )
+        result["calib_qampari_em_f1"] = stats.hmean(
+            [
+                result["calib_answered_qampari_f1_top5"],
+                result["calib_answerable_qampari_f1_top5"],
+            ]
+        )
 
     if args.parametric:
-        result['parametric_qampari_rec_top5'] = result['answered_qampari_rec_top5'] - compute_qampari_f1(normalized_answered_data, args, prefix="parametric_", calib=True, parametric=True)['parametric_qampari_rec_top5']
+        result["parametric_qampari_rec_top5"] = (
+            result["answered_qampari_rec_top5"]
+            - compute_qampari_f1(
+                normalized_answered_data,
+                args,
+                prefix="parametric_",
+                calib=True,
+                parametric=True,
+            )["parametric_qampari_rec_top5"]
+        )
     return result
 
 
-def compute_citation_metrics(data: List[Dict[str, Any]],
-                             args: Any,
-                             is_qampari: bool=False,
-                             at_most_citations: Optional[bool]=None) -> Dict[str, Any]:
+def compute_citation_metrics(
+    data: List[Dict[str, Any]],
+    args: Any,
+    is_qampari: bool = False,
+    at_most_citations: Optional[bool] = None,
+) -> Dict[str, Any]:
     """
     Compute AutoAIS score.
 
@@ -316,47 +479,58 @@ def compute_citation_metrics(data: List[Dict[str, Any]],
     for item in tqdm(data, desc="Computing citation score"):
         # Get sentences by using NLTK
         if is_qampari:
-            sents = [item['question'] + " " + x.strip() for x in item['output'].rstrip().rstrip(".").rstrip(",").split(",")]
+            sents = [
+                item["question"] + " " + x.strip()
+                for x in item["output"].rstrip().rstrip(".").rstrip(",").split(",")
+            ]
         else:
-            sents = sent_tokenize(item['output'])
+            sents = sent_tokenize(item["output"])
         if len(sents) == 0:
             continue
         target_sents = [remove_citations(sent).strip() for sent in sents]
-        
+
         entail = 0
         entail_prec = 0
         total_citations = 0
         for sent_id, sent in enumerate(sents):
-            target_sent = target_sents[sent_id] # Citation removed and (if opted for) decontextualized
-            joint_entail = -1 # Undecided
+            target_sent = target_sents[
+                sent_id
+            ]  # Citation removed and (if opted for) decontextualized
+            joint_entail = -1  # Undecided
 
             # Find references
-            ref = [int(r[1:])-1 for r in re.findall(r"\[\d+", sent)] # In text citation id starts from 1
+            ref = [
+                int(r[1:]) - 1 for r in re.findall(r"\[\d+", sent)
+            ]  # In text citation id starts from 1
             logger.info(f"For `{sent}`, find citations {ref}")
-            
+
             # No citations
             if len(ref) == 0:
                 joint_entail = 0
             # Citations out of range
-            elif any([ref_id >= len(item['docs']) for ref_id in ref]):
+            elif any([ref_id >= len(item["docs"]) for ref_id in ref]):
                 joint_entail = 0
             else:
                 if at_most_citations is not None:
                     ref = ref[:at_most_citations]
                 total_citations += len(ref)
-                joint_passage = '\n'.join([format_document(item['docs'][psgs_id]) for psgs_id in ref])
+                joint_passage = "\n".join(
+                    [format_document(item["docs"][psgs_id]) for psgs_id in ref]
+                )
 
-            # If not directly rejected by citation format error, calculate the recall score
-            if joint_entail == -1: 
+            # If not directly refused by citation format error, calculate the recall score
+            if joint_entail == -1:
                 joint_entail = _run_nli_autoais(joint_passage, target_sent, args)
-                autoais_log.append({
-                    "question": item['question'],
-                    "output": item['output'],
-                    "claim": sent,
-                    "passage": [joint_passage],
-                    "model_type": "NLI",
-                    "model_output": joint_entail,
-                })
+                autoais_log.append(
+                    {
+                        "question": item["question"],
+                        "output": item["output"],
+                        "claim": sent,
+                        "passage": [joint_passage],
+                        "model_type": "NLI",
+                        "model_output": joint_entail,
+                    }
+                )
 
             entail += joint_entail
             if len(ref) > 1:
@@ -368,25 +542,38 @@ def compute_citation_metrics(data: List[Dict[str, Any]],
                 # Precision check: did the model cite any unnecessary documents?
                 for psgs_id in ref:
                     # condition A
-                    passage = format_document(item['docs'][psgs_id]) 
+                    passage = format_document(item["docs"][psgs_id])
                     nli_result = _run_nli_autoais(passage, target_sent, args)
 
                     # condition B
                     if not nli_result:
                         subset_exclude = copy.deepcopy(ref)
                         subset_exclude.remove(psgs_id)
-                        passage = '\n'.join([format_document(item['docs'][pid]) for pid in subset_exclude])
+                        passage = "\n".join(
+                            [
+                                format_document(item["docs"][pid])
+                                for pid in subset_exclude
+                            ]
+                        )
                         nli_result = _run_nli_autoais(passage, target_sent, args)
                         # check if it could support any claims within the subset_exclude
-                        subset_coverage = np.bitwise_or.reduce([item['docs'][pid]['answers_found'] for pid in subset_exclude])
+                        subset_coverage = np.bitwise_or.reduce(
+                            [
+                                item["docs"][pid]["answers_found"]
+                                for pid in subset_exclude
+                            ]
+                        )
                         contained = False
                         for i in range(len(subset_coverage)):
-                            if subset_coverage[i] == 1 and item['docs'][psgs_id]['answers_found'][i] == 1:
+                            if (
+                                subset_coverage[i] == 1
+                                and item["docs"][psgs_id]["answers_found"][i] == 1
+                            ):
                                 contained = True
                                 break
-                                
-                        if nli_result and (not contained): # psgs_id is not necessary
-                            sent_mcite_overcite += 1 
+
+                        if nli_result and (not contained):  # psgs_id is not necessary
+                            sent_mcite_overcite += 1
                             logger.info(f"For `{sent}`, exclude citation {psgs_id}")
                         else:
                             entail_prec += 1
@@ -398,28 +585,49 @@ def compute_citation_metrics(data: List[Dict[str, Any]],
 
         sent_total += len(sents)
         regular_ais_scores.append(entail / len(sents))
-        regular_ais_scores_prec.append(entail_prec / total_citations if total_citations > 0 else 0) # len(sents)
+        regular_ais_scores_prec.append(
+            entail_prec / total_citations if total_citations > 0 else 0
+        )  # len(sents)
 
         # answered data
         refusal = _is_refusal(item, args)
         if not refusal:
             answered_ais_scores.append(entail / len(sents))
-            answered_ais_scores_prec.append(entail_prec / total_citations if total_citations > 0 else 0) # len(sents)
+            answered_ais_scores_prec.append(
+                entail_prec / total_citations if total_citations > 0 else 0
+            )  # len(sents)
 
     if sent_mcite > 0 and sent_mcite_support > 0:
-        print("Among all sentences, %.2f%% have multiple citations, among which %.2f%% are supported by the joint set, among which %.2f%% overcite." % (
-            100 * sent_mcite / sent_total, 
-            100 * sent_mcite_support / sent_mcite, 
-            100 * sent_mcite_overcite / sent_mcite_support
-        ))
+        print(
+            "Among all sentences, %.2f%% have multiple citations, among which %.2f%% are supported by the joint set, among which %.2f%% overcite."
+            % (
+                100 * sent_mcite / sent_total,
+                100 * sent_mcite_support / sent_mcite,
+                100 * sent_mcite_overcite / sent_mcite_support,
+            )
+        )
 
     regular_recall = 100 * np.mean(regular_ais_scores)
     regular_precision = 100 * np.mean(regular_ais_scores_prec)
-    regular_f1_score = 2 * (regular_precision * regular_recall) / (regular_precision + regular_recall) if (regular_precision + regular_recall) > 0 else 0
-    
-    answered_recall = 100 * np.mean(answered_ais_scores if len(answered_ais_scores) != 0 else 0)
-    answered_precision = 100 * np.mean(answered_ais_scores_prec if len(answered_ais_scores_prec) != 0 else 0)
-    answered_f1_score = 2 * (answered_precision * answered_recall) / (answered_precision + answered_recall) if (answered_precision + answered_recall) > 0 else 0
+    regular_f1_score = (
+        2 * (regular_precision * regular_recall) / (regular_precision + regular_recall)
+        if (regular_precision + regular_recall) > 0
+        else 0
+    )
+
+    answered_recall = 100 * np.mean(
+        answered_ais_scores if len(answered_ais_scores) != 0 else 0
+    )
+    answered_precision = 100 * np.mean(
+        answered_ais_scores_prec if len(answered_ais_scores_prec) != 0 else 0
+    )
+    answered_f1_score = (
+        2
+        * (answered_precision * answered_recall)
+        / (answered_precision + answered_recall)
+        if (answered_precision + answered_recall) > 0
+        else 0
+    )
 
     return {
         "regular_" + "citation_rec": regular_recall,
@@ -431,39 +639,54 @@ def compute_citation_metrics(data: List[Dict[str, Any]],
     }
 
 
-def get_citation_scores(data: List[Dict], normalized_data: List[Dict], normalized_answered_data: List[Dict], normalized_answerable_data: List[Dict], args: Any) -> Dict[str, Any]:
+def get_citation_scores(
+    data: List[Dict],
+    normalized_data: List[Dict],
+    normalized_answered_data: List[Dict],
+    normalized_answerable_data: List[Dict],
+    args: Any,
+) -> Dict[str, Any]:
     result = {}
-    result.update(compute_citation_metrics(data, args, is_qampari=args.is_qampari, at_most_citations=args.at_most_citations))
+    result.update(
+        compute_citation_metrics(
+            data,
+            args,
+            is_qampari=args.is_qampari,
+            at_most_citations=args.at_most_citations,
+        )
+    )
     return result
 
-    
-def compute_macro_metrics(data: List[Dict[str, Any]], args: Any) -> Dict[str, Any]:    
-    reject_rec_num = 0
-    reject_rec = 0
-    reject_prec_num = 0
-    reject_prec = 0
+
+def compute_macro_metrics(data: List[Dict[str, Any]], args: Any) -> Dict[str, Any]:
+    refuse_rec_num = 0
+    refuse_rec = 0
+    refuse_prec_num = 0
+    refuse_prec = 0
 
     ans_rec_num = 0
     ans_rec = 0
     ans_prec_num = 0
     ans_prec = 0
-    
+
     for item in data:
-        supported_claims = np.bitwise_or.reduce([doc["answers_found"] for doc in item['docs']]).tolist()
+        supported_claims = np.bitwise_or.reduce(
+            [doc["answers_found"] for doc in item["docs"]]
+        ).tolist()
         answerable = _is_answerable(supported_claims)
         refusal = _is_refusal(item, args)
-        
+
         # Refusal recall
         if not answerable:
-            reject_rec_num += 1
+            refuse_rec_num += 1
             if refusal:
-                reject_rec += 1
-        
+                refuse_rec += 1
+
         # Refusal precision
         if refusal:
-            reject_prec_num += 1
+            refuse_prec_num += 1
             if not answerable:
-                reject_prec += 1
+                refuse_prec += 1
 
         # Answerable recall
         if answerable:
@@ -476,71 +699,98 @@ def compute_macro_metrics(data: List[Dict[str, Any]], args: Any) -> Dict[str, An
             ans_prec_num += 1
             if answerable:
                 ans_prec += 1
-    
-    reject_recall = 100 * reject_rec / reject_rec_num if reject_rec_num > 0 else 0
-    reject_precision = 100 * reject_prec / reject_prec_num if reject_prec_num > 0 else 0
-    reject_f1_score = 2 * (reject_precision * reject_recall) / (reject_precision + reject_recall) if (reject_precision + reject_recall) > 0 else 0
+
+    refuse_recall = 100 * refuse_rec / refuse_rec_num if refuse_rec_num > 0 else 0
+    refuse_precision = 100 * refuse_prec / refuse_prec_num if refuse_prec_num > 0 else 0
+    refuse_f1_score = (
+        2 * (refuse_precision * refuse_recall) / (refuse_precision + refuse_recall)
+        if (refuse_precision + refuse_recall) > 0
+        else 0
+    )
 
     ans_recall = 100 * ans_rec / ans_rec_num if ans_rec_num > 0 else 0
     ans_precision = 100 * ans_prec / ans_prec_num if ans_prec_num > 0 else 0
-    ans_f1_score = 2 * (ans_precision * ans_recall) / (ans_precision + ans_recall) if (ans_precision + ans_recall) > 0 else 0
-    
+    ans_f1_score = (
+        2 * (ans_precision * ans_recall) / (ans_precision + ans_recall)
+        if (ans_precision + ans_recall) > 0
+        else 0
+    )
+
     return {
-        "reject_rec": reject_recall, 
-        "reject_prec": reject_precision, 
-        "reject_f1": reject_f1_score,
+        "refuse_rec": refuse_recall,
+        "refuse_prec": refuse_precision,
+        "refuse_f1": refuse_f1_score,
         "answerable_rec": ans_recall,
         "answerable_prec": ans_precision,
         "answerable_f1": ans_f1_score,
-        "macro_avg": np.mean([reject_recall, ans_recall]),
-        "macro_f1": np.mean([reject_f1_score, ans_f1_score])
+        "macro_avg": np.mean([refuse_recall, ans_recall]),
+        "macro_f1": np.mean([refuse_f1_score, ans_f1_score]),
     }
 
 
-def get_macro_scores(data: List[Dict], normalized_data: List[Dict], normalized_answered_data: List[Dict], normalized_answerable_data: List[Dict], args: Any) -> Dict[str, Any]:
+def get_macro_scores(
+    data: List[Dict],
+    normalized_data: List[Dict],
+    normalized_answered_data: List[Dict],
+    normalized_answerable_data: List[Dict],
+    args: Any,
+) -> Dict[str, Any]:
     return compute_macro_metrics(data, args)
-    
+
 
 def _compute_incorrect_frequency(answered_data: List[Dict[str, Any]]) -> Dict[str, Any]:
-    
+
     if len(answered_data) == 0:
         logger.warning("Warning: answered_data should not be zero")
         return {
             "qampari_presence": 0.0,
             "qampari_absence": 0.0,
         }
-    
+
     presence_list = []
     absence_list = []
     for item in answered_data:
-        supported_claims = np.bitwise_or.reduce([doc["answers_found"] for doc in item['docs']]).tolist()
-        calib_ground_truths = []  
-        for i, ans in enumerate(item['answers']):
+        supported_claims = np.bitwise_or.reduce(
+            [doc["answers_found"] for doc in item["docs"]]
+        ).tolist()
+        calib_ground_truths = []
+        for i, ans in enumerate(item["answers"]):
             # ignore golden answers that are not recalled by given docs
             if supported_claims[i] == 1:
                 calib_ground_truths.append(ans)
-        
-        o = item['output']        
+
+        o = item["output"]
         preds = [x.strip() for x in o.rstrip().rstrip(".").rstrip(",").split(",")]
-        preds = [p for p in preds if len(p) > 0] # delete empty answers
-        
+        preds = [p for p in preds if len(p) > 0]  # delete empty answers
+
         # detect correct/incorrect
-        ans_correctness_ls = [any([_exact_presence(gts, p) for gts in calib_ground_truths]) for p in preds]
-                    
+        ans_correctness_ls = [
+            any([_exact_presence(gts, p) for gts in calib_ground_truths]) for p in preds
+        ]
+
         # detect in/not in docs
-        ans_existence_ls = [any([_exact_presence([p], doc['text']) for doc in item['docs']]) for p in preds]
+        ans_existence_ls = [
+            any([_exact_presence([p], doc["text"]) for doc in item["docs"]])
+            for p in preds
+        ]
 
         ans_correctness = np.array(ans_correctness_ls)
         ans_existence = np.array(ans_existence_ls)
         if any(ans_correctness == 0):
-            presence_list.append(np.sum((ans_correctness == 0) & (ans_existence == 1)) / sum(ans_correctness == 0))
-            absence_list.append(np.sum((ans_correctness == 0) & (ans_existence == 0)) / sum(ans_correctness == 0))
-        
+            presence_list.append(
+                np.sum((ans_correctness == 0) & (ans_existence == 1))
+                / sum(ans_correctness == 0)
+            )
+            absence_list.append(
+                np.sum((ans_correctness == 0) & (ans_existence == 0))
+                / sum(ans_correctness == 0)
+            )
+
     return {
         "qampari_presence": 100 * np.mean(presence_list),
         "qampari_absence": 100 * np.mean(absence_list),
     }
-    
+
 
 def _exact_presence(short_answers: List[str], context: str) -> bool:
     """Verify if any of the answers is present in the given context.
@@ -602,7 +852,9 @@ def _run_nli_autoais(passage: str, claim: str, args: Any) -> int:
     autoais_model, autoais_tokenizer = get_autoais_model_and_tokenizer(args)
 
     input_text = "premise: {} hypothesis: {}".format(passage, claim)
-    input_ids = autoais_tokenizer(input_text, return_tensors="pt").input_ids.to(autoais_model.device)
+    input_ids = autoais_tokenizer(input_text, return_tensors="pt").input_ids.to(
+        autoais_model.device
+    )
 
     # print(f"Input Text: {input_text}")
     # print(f"Tokenized Input: {input_ids}")
@@ -614,25 +866,66 @@ def _run_nli_autoais(passage: str, claim: str, args: Any) -> int:
     inference = 1 if result == "1" else 0
     return inference
 
-def compute_answered_ratio(data: List[Dict], normalized_data: List[Dict], normalized_answered_data: List[Dict], normalized_answerable_data: List[Dict], args: Any) -> float:
+
+def compute_answered_ratio(
+    data: List[Dict],
+    normalized_data: List[Dict],
+    normalized_answered_data: List[Dict],
+    normalized_answerable_data: List[Dict],
+    args: Any,
+) -> float:
     return round(100 * len(normalized_answered_data) / len(normalized_data), 2)
 
-def get_basic_stats(data: List[Dict], normalized_data: List[Dict], normalized_answered_data: List[Dict], normalized_answerable_data: List[Dict], args: Any) -> Dict[str, Any]:
+
+def get_basic_stats(
+    data: List[Dict],
+    normalized_data: List[Dict],
+    normalized_answered_data: List[Dict],
+    normalized_answerable_data: List[Dict],
+    args: Any,
+) -> Dict[str, Any]:
     result = {}
-    result['answered_ratio'] = round(100 * len(normalized_answered_data) / len(normalized_data), 2)
-    result['answered_num'] = len(normalized_answered_data)
-    result['answerable_num'] = len(normalized_answerable_data)
-    result['overlapped_num'] = len([item for item in normalized_answered_data if any(np.bitwise_or.reduce([doc["answers_found"] for doc in item['docs']]))])
-    result['regular_length'] = compute_len(normalized_data)
-    result['answered_length'] = compute_len(normalized_answered_data)
+    result["answered_ratio"] = round(
+        100 * len(normalized_answered_data) / len(normalized_data), 2
+    )
+    result["answered_num"] = len(normalized_answered_data)
+    result["answerable_num"] = len(normalized_answerable_data)
+    result["overlapped_num"] = len(
+        [
+            item
+            for item in normalized_answered_data
+            if any(np.bitwise_or.reduce([doc["answers_found"] for doc in item["docs"]]))
+        ]
+    )
+    result["regular_length"] = compute_len(normalized_data)
+    result["answered_length"] = compute_len(normalized_answered_data)
     return result
+
 
 def compute_trust_score(result: Dict[str, Any], args: Any) -> Dict[str, Any]:
     if args.eval_type == "em":
-        result['trust_score'] = np.mean([result['calib_str_em_f1'], result['macro_f1'], result['answered_citation_f1']])
+        result["trust_score"] = np.mean(
+            [
+                result["calib_str_em_f1"],
+                result["macro_f1"],
+                result["answered_citation_f1"],
+            ]
+        )
     elif args.eval_type == "em5":
-        result['trust_score'] = np.mean([result['calib_qampari_em_f1'], result['macro_f1'], result['answered_citation_f1']])
+        result["trust_score"] = np.mean(
+            [
+                result["calib_qampari_em_f1"],
+                result["macro_f1"],
+                result["answered_citation_f1"],
+            ]
+        )
     elif args.eval_type == "cm":
-        result['trust_score'] = np.mean([result['calib_claims_nli_f1'], result['macro_f1'], result['answered_citation_f1']])
-    
+        result["trust_score"] = np.mean(
+            [
+                result["calib_claims_nli_f1"],
+                result["macro_f1"],
+                result["answered_citation_f1"],
+            ]
+        )
+
     return result

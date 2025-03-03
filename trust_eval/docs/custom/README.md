@@ -188,13 +188,13 @@ Sample output:
     // Refusal groundedness metrics
 
     // # qns where (model refused to respond & is ground truth unanswerable) / # qns is ground truth unanswerable
-    "reject_rec": 75.0,
+    "refusal_rec": 75.0,
 
     // # qns where (model refused to respond & is ground truth unanswerable) / # qns where model refused to respond
-    "reject_prec": 100.0,
+    "refusal_prec": 100.0,
 
-    // F1 of reject_rec and reject_prec
-    "reject_f1": 85.71428571428571,
+    // F1 of refusal_rec and refusal_prec
+    "refusal_f1": 85.71428571428571,
 
     // # qns where (model respond & is ground truth answerable) / # qns is ground truth answerable
     "answerable_rec": 100.0,
@@ -205,10 +205,10 @@ Sample output:
     // F1 of answerable_rec and answerable_prec
     "answerable_f1": 80.0,
 
-    // Avg of reject_rec and answerable_rec
+    // Avg of refusal_rec and answerable_rec
     "macro_avg": 87.5,
 
-    // Avg of reject_f1 and answerable_f1
+    // Avg of refusal_f1 and answerable_f1
     "macro_f1": 82.85714285714286,
 
     // Response correctness metrics
